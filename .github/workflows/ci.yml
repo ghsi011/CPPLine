@@ -18,10 +18,9 @@ jobs:
     - name: Set up Visual Studio
       uses: microsoft/setup-msbuild@v2
 
-    - name: Set up gtest
-      uses: LazyPanda07/get-gtest@v1.1
-      with:
-        install-path: x64/Release
+    - name: Restore NuGet packages
+      run: |
+        nuget restore CPPLine.sln
         
     - name: Build Solution
       run: |
