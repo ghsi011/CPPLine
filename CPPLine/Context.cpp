@@ -1,6 +1,7 @@
 module ErrorHandling;
 
 import std;
+import :Enums;
 
 namespace error_handling
 {

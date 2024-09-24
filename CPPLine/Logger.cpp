@@ -2,6 +2,9 @@ module;
 #include "magic_enum.hpp"
 
 module ErrorHandling;
+import :Enums;
+import :Exception;
+import :Context;
 
 import std;
 

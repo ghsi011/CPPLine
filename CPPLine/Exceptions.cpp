@@ -1,6 +1,8 @@
 module ErrorHandling;
 
 import std;
+import :Context;
+import :Enums;
 
 namespace error_handling
 {

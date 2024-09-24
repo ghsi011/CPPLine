@@ -148,10 +148,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Context.cpp" />
+    <ClCompile Include="Context.ixx" />
     <ClCompile Include="Enums.cpp" />
+    <ClCompile Include="Enums.ixx" />
     <ClCompile Include="ErrorHandling.ixx" />
     <ClCompile Include="Exceptions.cpp" />
+    <ClCompile Include="Exceptions.ixx" />
     <ClCompile Include="Logger.cpp" />
+    <ClCompile Include="Logger.ixx" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="Parser.ixx" />

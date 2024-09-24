@@ -11,7 +11,7 @@ def is_source_file(filename):
     _, ext = os.path.splitext(filename)
     return ext.lower() in source_extensions
 
-def consolidate_source_files(directory, output_file):
+def consolidate_source_files(directory, output_file, exclude_list):
     """
     Traverse the directory, find all source files, and write their contents to the output file.
     Each file's content is preceded by a header indicating the filename.
@@ -19,7 +19,7 @@ def consolidate_source_files(directory, output_file):
     with open(output_file, 'w', encoding='utf-8') as outfile:
         for root, _, files in os.walk(directory):
             for file in files:
-                if is_source_file(file):
+                if is_source_file(file) and file not in exclude_list:
                     file_path = os.path.join(root, file)
                     relative_path = os.path.relpath(file_path, directory)
                     header = f"\n{'='*80}\n// File: {relative_path}\n{'='*80}\n\n"
@@ -51,6 +51,13 @@ if __name__ == "__main__":
         help="Name of the output text file. Default is 'consolidated_code.txt'."
     )
 
+    parser.add_argument(
+        "-e", "--exclude",
+        type=list,
+        default=[],
+        help="list of files to exclude"
+    )
+
     args = parser.parse_args()
 
     # Validate directory path
@@ -59,4 +66,4 @@ if __name__ == "__main__":
         exit(1)
 
     # Call the consolidation function
-    consolidate_source_files(args.directory, args.output)
+    consolidate_source_files(args.directory, args.output, args.exclude)
