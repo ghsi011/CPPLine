@@ -34,10 +34,9 @@ jobs:
       with:
         name: test-results
         path: test-results.xml
-
-    - name: Publish Test Results
-      uses: dorny/test-reporter@v1
+    
+    - name: Test Summary
+      uses: test-summary/action@v2
       with:
-        name: Test Results
-        path: test-results.xml
-        reporter: junit
+        paths: "test-results.xml"
+      if: always()
