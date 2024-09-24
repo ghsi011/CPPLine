@@ -2,7 +2,9 @@
 
 ![CI](https://github.com/ghsi011/CPPLine/actions/workflows/ci.yml/badge.svg)
 
-CPPLine is a C++ command-line argument parser designed to simplify the process of handling command-line options and arguments in C++ applications. It leverages modern C++ features, including modules and concepts, to provide a clean and easy-to-use interface.
+CPPLine is a showcase project designed to demonstrate the usage of modern C++20 modules with a focus on modularity, clean separation of interface and implementation (similar to classic headers and source files).
+
+It also includes a cool take on custom Exception classes using stacktrace and a custom Context object.
 
 ## Features
 
