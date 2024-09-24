@@ -1,13 +1,11 @@
-module;
-
-#include "magic_enum.hpp"
-
 export module ErrorHandling:Logger;
 
-import std;
 import :Enums;
 import :Exception;
 import :Context;
+
+import std;
+import "magic_enum.hpp";
 
 export namespace error_handling {
 

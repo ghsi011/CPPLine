@@ -1,8 +1,7 @@
-// Parser.cppm
 module CPPLine;
 
 import std;
-import ErrorHandling; // Import the error handling module
+import ErrorHandling;
 
 using namespace error_handling;
 

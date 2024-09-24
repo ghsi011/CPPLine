@@ -1,12 +1,10 @@
-module;
-#include "magic_enum.hpp"
-
 module ErrorHandling;
 import :Enums;
 import :Exception;
 import :Context;
 
 import std;
+import "magic_enum.hpp";
 
 namespace error_handling
 {
