@@ -18,5 +18,14 @@
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CPPLine.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CPPLine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ai_share.py" />
   </ItemGroup>
 </Project>
