@@ -3,7 +3,7 @@ import std;
 import CPPLine;
 import ErrorHandling;
 
-using namespace error_handling;
+using namespace cppline::errors;
 
 int main(int argc, char* argv[]) {
     using namespace cppline;

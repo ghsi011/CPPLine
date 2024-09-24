@@ -4,7 +4,7 @@ import std;
 import :Context;
 import :Enums;
 
-export namespace error_handling {
+export namespace cppline::errors {
 class Exception;
 using ExceptionPtr = std::unique_ptr<Exception>;
 
@@ -39,4 +39,4 @@ private:
     std::source_location m_location;
     std::stacktrace m_stacktrace;
 };
-} // namespace error_handling
+} // namespace cppline::errors

@@ -4,7 +4,7 @@ export module CPPLine;
 import std;
 export import ErrorHandling; // Import the error handling module
 
-using namespace error_handling;
+using namespace cppline::errors;
 
 namespace cppline {
 

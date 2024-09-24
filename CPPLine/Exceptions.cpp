@@ -4,7 +4,7 @@ import std;
 import :Context;
 import :Enums;
 
-namespace error_handling
+namespace cppline::errors
 {
 Exception::Exception(Status status,
                      Context context,

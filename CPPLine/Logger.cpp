@@ -6,7 +6,7 @@ import :Context;
 import std;
 import "magic_enum.hpp";
 
-namespace error_handling
+namespace cppline::errors
 {
 
 void Logger::log(const std::string& message)

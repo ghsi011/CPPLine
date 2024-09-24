@@ -9,7 +9,7 @@ EnumTypes enum_type_helper<enum_name>(enum_name) { \
     return EnumTypes::enum_name; \
 }
 
-namespace error_handling {
+namespace cppline::errors {
 
 logger_add_enum(Status)
 logger_add_enum(Message)

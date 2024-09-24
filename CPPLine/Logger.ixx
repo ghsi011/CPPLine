@@ -7,7 +7,7 @@ import :Context;
 import std;
 import "magic_enum.hpp";
 
-export namespace error_handling {
+export namespace cppline::errors {
 
 class Logger final
 {
@@ -59,4 +59,4 @@ public:
     Logger& operator=(Logger&&) = delete;
 };
 
-} // namespace error_handling
+} // namespace cppline::errors

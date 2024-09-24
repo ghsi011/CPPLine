@@ -28,14 +28,14 @@ TEST(ParserTest, MissingArgument) {
     parser.add_int("--number", "Number option");
 
     const char* argv[] = { "--number" };
-    EXPECT_THROW(parser.parse({ argv, argv + 1 }), error_handling::Exception);
+    EXPECT_THROW(parser.parse({ argv, argv + 1 }), cppline::errors::Exception);
 }
 
 TEST(ParserTest, UnknownOption) {
     cppline::Parser parser("Test Parser");
 
     const char* argv[] = { "--unknown" };
-    EXPECT_THROW(parser.parse({ argv, argv + 1 }), error_handling::Exception);
+    EXPECT_THROW(parser.parse({ argv, argv + 1 }), cppline::errors::Exception);
 }
 
 TEST(ParserCustomTypeTest, CustomKeyValueOption) {
@@ -45,9 +45,9 @@ TEST(ParserCustomTypeTest, CustomKeyValueOption) {
     parser.add_option("--keyvalue", "Set a key-value pair",
                       [](const std::vector<std::string_view>& args) -> std::any {
                           if (args.size() < 2) {
-                              throw error_handling::Exception(
-                                  error_handling::Status::MissingArgument,
-                                  error_handling::Context{ error_handling::Param::ErrorMessage, "Expected key and value" });
+                              throw cppline::errors::Exception(
+                                  cppline::errors::Status::MissingArgument,
+                                  cppline::errors::Context{ cppline::errors::Param::ErrorMessage, "Expected key and value" });
                           }
                           return std::make_pair(std::string(args[0]), std::string(args[1]));
                       }, 2);
@@ -71,9 +71,9 @@ TEST(ParserCustomTypeTest, MissingKeyValueArguments) {
     parser.add_option("--keyvalue", "Set a key-value pair",
                       [](const std::vector<std::string_view>& args) -> std::any {
                           if (args.size() < 2) {
-                              throw error_handling::Exception(
-                                  error_handling::Status::MissingArgument,
-                                  error_handling::Context{ error_handling::Param::ErrorMessage, "Expected key and value" });
+                              throw cppline::errors::Exception(
+                                  cppline::errors::Status::MissingArgument,
+                                  cppline::errors::Context{ cppline::errors::Param::ErrorMessage, "Expected key and value" });
                           }
                           return std::make_pair(std::string(args[0]), std::string(args[1]));
                       }, 2);
@@ -82,5 +82,5 @@ TEST(ParserCustomTypeTest, MissingKeyValueArguments) {
     const char* argv[] = { "--keyvalue", "myKey" };
 
     // Expect an exception due to missing value argument
-    EXPECT_THROW(parser.parse({ argv, argv + 2 }), error_handling::Exception);
+    EXPECT_THROW(parser.parse({ argv, argv + 2 }), cppline::errors::Exception);
 }

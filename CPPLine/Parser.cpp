@@ -3,7 +3,7 @@ module CPPLine;
 import std;
 import ErrorHandling;
 
-using namespace error_handling;
+using namespace cppline::errors;
 
 namespace cppline {
 

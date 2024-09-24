@@ -3,7 +3,7 @@ module ErrorHandling;
 import std;
 import :Enums;
 
-namespace error_handling
+namespace cppline::errors
 {
 StringContext Context::get_string_params() const
 {

@@ -3,7 +3,7 @@ export module ErrorHandling:Context;
 import std;
 import :Enums;
 
-export namespace error_handling
+export namespace cppline::errors
 {
 
 using StringContext = std::map<Param, std::string>;

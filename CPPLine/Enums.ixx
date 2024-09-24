@@ -3,7 +3,7 @@ export module ErrorHandling:Enums;
 import std;
 import "magic_enum.hpp";
 
-namespace error_handling
+namespace cppline::errors
 {
 export template <typename T>
 concept EnumType = std::is_enum_v<T>;
