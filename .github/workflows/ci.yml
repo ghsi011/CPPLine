@@ -16,9 +16,12 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Set up Visual Studio
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v2
 
     - name: Build Solution
+      uses: LazyPanda07/get-gtest@v1.1
+      with:
+        install-path: x64/Release
       run: |
         msbuild CPPLine.sln /p:Configuration=Release
 
