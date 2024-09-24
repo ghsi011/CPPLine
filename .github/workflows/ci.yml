@@ -18,17 +18,10 @@ jobs:
     - name: Set up Visual Studio
       uses: microsoft/setup-msbuild@v1.0.2
 
-    - name: Install Google Test dependencies
-      run: |
-        git clone https://github.com/google/googletest.git
-        cd googletest
-        mkdir build
-        msbuild googletest.sln /p:Configuration=Release
-
     - name: Build Solution
       run: |
         msbuild CPPLine.sln /p:Configuration=Release
 
     - name: Run Tests
       run: |
-        vstest.console.exe build/Release/CPPLineTest.exe
+        build/Release/CPPLineTest.exe
