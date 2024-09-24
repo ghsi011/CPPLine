@@ -1,6 +1,6 @@
 # CPPLine
 
-![CI](https://github.com/yourusername/CPPLine/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/ghsi011/CPPLine/actions/workflows/ci.yml/badge.svg)
 
 CPPLine is a C++ command-line argument parser designed to simplify the process of handling command-line options and arguments in C++ applications. It leverages modern C++ features, including modules and concepts, to provide a clean and easy-to-use interface.
 
