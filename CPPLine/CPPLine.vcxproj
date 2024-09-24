@@ -147,9 +147,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="CPPLine.ixx" />
-    <ClCompile Include="CPPLine.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Parser.cpp" />
+    <ClCompile Include="Parser.ixx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ai_share.py" />
