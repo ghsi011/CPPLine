@@ -2,7 +2,7 @@
 export module CPPLine;
 
 import std;
-import ErrorHandling; // Import the error handling module
+export import ErrorHandling; // Import the error handling module
 
 using namespace error_handling;
 
