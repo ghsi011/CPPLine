@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
     parser.add_bool(std::vector<std::string>{ "--verbose", "-v" }, "Enable verbose output");
     parser.add_int(std::vector<std::string>{ "-n", "--number" }, "Set the number", 10);
     parser.add_string("--name", "Set the name", "default");
-    
+
     parser.add_option("--keyvalue", "Set a key-value pair",
                       [](const std::vector<std::string_view>& args) -> std::any {
                           if (args.size() < 2) {
