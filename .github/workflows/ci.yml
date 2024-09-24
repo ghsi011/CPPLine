@@ -18,10 +18,12 @@ jobs:
     - name: Set up Visual Studio
       uses: microsoft/setup-msbuild@v2
 
-    - name: Build Solution
+    - name: Set up gtest
       uses: LazyPanda07/get-gtest@v1.1
       with:
         install-path: x64/Release
+        
+    - name: Build Solution
       run: |
         msbuild CPPLine.sln /p:Configuration=Release
 
