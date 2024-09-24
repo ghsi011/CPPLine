@@ -2,9 +2,14 @@
 
 ![CI](https://github.com/ghsi011/CPPLine/actions/workflows/ci.yml/badge.svg)
 
-CPPLine is a showcase project designed to demonstrate the usage of modern C++20 modules with a focus on modularity, clean separation of interface and implementation (similar to classic headers and source files).
+CPPLine is a project demonstrating modern C++20 modules, focusing on modularity and clean separation of interface and implementation, much like traditional headers and source files.
 
-It also includes a cool take on custom Exception classes using stacktrace and a custom Context object.
+It features custom exception handling, using stacktraces along with other practical utilities for error management.
+TODO: add Expected utilites
+TODO: showcase usage of multiple enums in error handling.
+
+Development leveraged OpenAI O1-preview and mini-modules for refactoring and design insights, as well partical things like string parsing. 
+The exception handling utilities were adapted from a previous project.
 
 ## Features
 
