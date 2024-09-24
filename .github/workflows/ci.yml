@@ -28,4 +28,4 @@ jobs:
 
     - name: Run Tests
       run: |
-        build/Release/CPPLineTest.exe
+        x64/Release/CPPLineTest.exe
