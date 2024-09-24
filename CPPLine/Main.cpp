@@ -1,6 +1,9 @@
 // main.cpp
 import std;
 import CPPLine;
+import ErrorHandling;
+
+using namespace error_handling;
 
 int main(int argc, char* argv[]) {
     using namespace cppline;
@@ -8,24 +11,24 @@ int main(int argc, char* argv[]) {
     Parser parser("Demo Application");
 
     // Register options with aliases
-    parser.add_bool({ "--verbose", "-v" }, "Enable verbose output");
-    parser.add_int({ "-n", "--number" }, "Set the number", 10);
-    parser.add_string({ "--name" }, "Set the name", "default");
-    parser.add_option({ "--keyvalue" }, "Set a key-value pair",
+    parser.add_bool(std::vector<std::string>{ "--verbose", "-v" }, "Enable verbose output");
+    parser.add_int(std::vector<std::string>{ "-n", "--number" }, "Set the number", 10);
+    parser.add_string("--name", "Set the name", "default");
+    
+    parser.add_option("--keyvalue", "Set a key-value pair",
                       [](const std::vector<std::string_view>& args) -> std::any {
-                          if (args.empty()) {
-                              throw std::runtime_error("Expected key:value pair");
+                          if (args.size() < 2) {
+                              throw Exception(Status::MissingArgument, Context{ Param::ErrorMessage, "Expected key and value" });
                           }
-                          std::string arg = std::string(args[0]);
-                          auto pos = arg.find(':');
-                          if (pos == std::string::npos) {
-                              throw std::runtime_error("Invalid format, expected key:value");
-                          }
-                          std::string key = arg.substr(0, pos);
-                          std::string value{ args[1] };
+                          std::string key = std::string(args[0]);
+                          std::string value = std::string(args[1]);
                           return std::make_pair(key, value);
                       },
-                      2);
+                      2); // Two arguments after the name
+
+    // Register positional arguments
+    parser.add_string("First positional argument");
+    parser.add_int("Second positional argument");
 
     // Collect arguments
     std::vector<std::string_view> arguments;
@@ -45,8 +48,8 @@ int main(int argc, char* argv[]) {
     try {
         parser.parse(arguments);
     }
-    catch (const std::exception& ex) {
-        std::cerr << "Parsing error: " << ex.what() << "\n";
+    catch (const Exception& ex) {
+        Logger::log("Parsing error", ex);
         parser.print_help();
         return 1;
     }
@@ -58,23 +61,19 @@ int main(int argc, char* argv[]) {
         std::string name = parser.get<std::string>("--name");
         auto key_value = parser.get<std::pair<std::string, std::string>>("--keyvalue");
 
+        std::string first_pos_arg = parser.get_positional<std::string>(0);
+        int second_pos_arg = parser.get_positional<int>(1);
+
         std::cout << "Verbose: " << std::boolalpha << verbose << "\n";
         std::cout << "Number: " << number << "\n";
         std::cout << "Name: " << name << "\n";
         std::cout << "Key: " << key_value.first << ", Value: " << key_value.second << "\n";
+        std::cout << "First Positional Argument: " << first_pos_arg << "\n";
+        std::cout << "Second Positional Argument: " << second_pos_arg << "\n";
     }
-    catch (const std::exception& ex) {
-        std::cerr << "Retrieval error: " << ex.what() << "\n";
+    catch (const Exception& ex) {
+        Logger::log("Retrieval error", ex);
         return 1;
-    }
-
-    // Access positional arguments
-    const auto& positional_args = parser.positional_arguments();
-    if (!positional_args.empty()) {
-        std::cout << "Positional Arguments:\n";
-        for (const auto& arg : positional_args) {
-            std::cout << "  " << arg << "\n";
-        }
     }
 
     return 0;

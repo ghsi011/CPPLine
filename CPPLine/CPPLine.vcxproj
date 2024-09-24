@@ -147,12 +147,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Context.cpp" />
+    <ClCompile Include="Enums.cpp" />
+    <ClCompile Include="ErrorHandling.ixx" />
+    <ClCompile Include="Exceptions.cpp" />
+    <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="Parser.ixx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ai_share.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="magic_enum.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
