@@ -2,9 +2,11 @@
 
 ![CI](https://github.com/ghsi011/CPPLine/actions/workflows/ci.yml/badge.svg)
 
-CPPLine is a project demonstrating modern C++20 modules, focusing on modularity and clean separation of interface and implementation, much like traditional headers and source files.
+CPPLine is a project demonstrating modern C++20 modules and ErrorHandling through a simple Command Line parsing library
 
-It features custom exception handling, using stacktraces along with other practical utilities for error management.
+It showcases using multiple modules and module partitions with clean separation of interface and implementation, much like traditional headers and source files.
+
+It features custom exception handling, using C++23 stacktraces along with other practical utilities for error management.
 TODO: add Expected utilites
 TODO: showcase usage of multiple enums in error handling.
 
