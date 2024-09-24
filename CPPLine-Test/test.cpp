@@ -15,7 +15,7 @@ TEST(ParserTest, AddBoolOption) {
 
 TEST(ParserTest, AddIntOption) {
     cppline::Parser parser("Test Parser");
-    parser.add_int("--number", "Number option", 0);
+    parser.add_int("--numbe", "Number option", 0);
 
     const char* argv[] = { "--number", "42" };
     parser.parse({ argv, argv + 2 });
