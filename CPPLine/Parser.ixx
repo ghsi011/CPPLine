@@ -93,7 +93,7 @@ private:
     std::string m_description;
     std::vector<Option> m_options;
     std::unordered_map<std::string, size_t> m_option_map; // Maps option names to indices in m_options
-    std::vector<Option> m_positional_options; // Pointers to positional Option objects
+    std::vector<Option> m_positional_options;
 };
 
 template <typename ... Args>
