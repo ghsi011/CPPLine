@@ -29,13 +29,13 @@ ExpectedVoid Parser::try_add_option(const std::vector<std::string>& names, const
 }
 
 ExpectedVoid Parser::try_add_option(const std::string& name, const std::string& help, ParseFunctionType parse_function,
-    size_t argument_count, std::any default_value)
+                                    size_t argument_count, std::any default_value)
 {
     return try_add_option(std::vector{ name }, help, parse_function, argument_count, default_value);
 }
 
 ExpectedVoid Parser::try_add_option(const std::string& help, ParseFunctionType parse_function, size_t argument_count,
-    std::any default_value)
+                                    std::any default_value)
 {
     Option option{ {}, help, argument_count, parse_function, default_value, false };
     m_options.push_back(option);
@@ -45,84 +45,58 @@ ExpectedVoid Parser::try_add_option(const std::string& help, ParseFunctionType p
     return success();
 }
 
-// Implement `add_bool` overloads
-void Parser::add_bool(const std::vector<std::string>& names, const std::string& help) {
-    add_option(names, help,
-               [](const std::vector<std::string_view>&) -> std::any {
-                   return true; // Presence implies true
-               },
-               0,
-               false); // No arguments after the option name
+ExpectedVoid Parser::try_add_bool(const std::vector<std::string>& names, const std::string& help) {
+    return try_add_option(names, help,
+                          parse_bool,
+                          0,
+                          false); // No arguments after the option name
 }
 
-void Parser::add_bool(const std::string& name, const std::string& help) {
-    add_bool(std::vector{ name }, help);
+ExpectedVoid Parser::try_add_bool(const std::string& name, const std::string& help) {
+    return try_add_bool(std::vector{ name }, help);
 }
 
-void Parser::add_bool(const std::string& help) {
-    add_option(help,
-               [](const std::vector<std::string_view>&) -> std::any {
-                   return true; // Presence implies true
-               },
-               0, false); // No arguments after the positional argument
+ExpectedVoid Parser::try_add_bool(const std::string& help) {
+    return try_add_option(help,
+                          parse_bool,
+                          0,
+                          false); // No arguments after the positional argument
 }
 
-// Similar for `add_int` and `add_string`
-
-void Parser::add_int(const std::vector<std::string>& names, const std::string& help, int default_value) {
-    add_option(names, help,
-               [names](const std::vector<std::string_view>& args) -> std::any {
-                   if (args.empty()) {
-                       throw Exception(Status::MissingArgument, Context{ Param::OptionName, join_names(names) });
-                   }
-                   return std::stoi(std::string(args[0]));
-               },
-               1,
-               default_value); // One argument after the name
+ExpectedVoid Parser::try_add_int(const std::vector<std::string>& names, const std::string& help, int default_value) {
+    return try_add_option(names, help,
+                          parse_int_factory(names),
+                          1,
+                          default_value); // One argument after the name
 }
 
-void Parser::add_int(const std::string& name, const std::string& help, int default_value) {
-    add_int(std::vector{ name }, help, default_value);
+ExpectedVoid Parser::try_add_int(const std::string& name, const std::string& help, int default_value) {
+    return try_add_int(std::vector{ name }, help, default_value);
 }
 
-void Parser::add_int(const std::string& help) {
-    add_option(help,
-               [](const std::vector<std::string_view>& args) -> std::any {
-                   if (args.empty()) {
-                       throw Exception(Status::MissingArgument, Context{ Param::ErrorMessage, "Expected a value" });
-                   }
-                   return std::stoi(std::string(args[0]));
-               },
-               1); // One argument after the positional argument
+ExpectedVoid Parser::try_add_int(const std::string& help) {
+    return try_add_option(help,
+                          parse_int_factory({}),
+                          1); // One argument after the positional argument
 }
 
-// Similarly for `add_string`
-
-void Parser::add_string(const std::vector<std::string>& names, const std::string& help, const std::string& default_value) {
-    add_option(names, help,
-               [names](const std::vector<std::string_view>& args) -> std::any {
-                   if (args.empty()) {
-                       throw Exception(Status::MissingArgument, Context{ Param::OptionName, join_names(names) });
-                   }
-                   return std::string(args[0]);
-               },
-               1, default_value); // One argument after the name
+ExpectedVoid Parser::try_add_string(const std::vector<std::string>& names, const std::string& help, const std::string& default_value) {
+    return try_add_option(names, help,
+                          parse_string_factory(names),
+                          1,
+                          default_value); // One argument after the name
 }
 
-void Parser::add_string(const std::string& name, const std::string& help, const std::string& default_value) {
-    add_string(std::vector{ name }, help, default_value);
+ExpectedVoid Parser::try_add_string(const std::string& name, const std::string& help, const std::string& default_value) {
+    return try_add_string(std::vector{ name }, help, default_value);
 }
 
-void Parser::add_string(const std::string& help) {
-    add_option(help,
-               [](const std::vector<std::string_view>& args) -> std::any {
-                   if (args.empty()) {
-                       throw Exception(Status::MissingArgument);
-                   }
-                   return std::string(args[0]);
-               },
-               1); // One argument after the positional argument
+ExpectedVoid Parser::try_add_string(const std::string& help) {
+    return try_add_option(help,
+                          parse_string_factory({}),
+                          1); // One argument after the positional argument
 }
+
 
 void Parser::parse(const std::vector<std::string_view>& arguments) {
     auto non_positional_arguments = parse_positional(arguments);
@@ -221,4 +195,28 @@ std::string Parser::join_names(const std::vector<std::string>& names) {
     );
 }
 
+std::any Parser::parse_bool(const std::vector<std::string_view>&)
+{
+    return true; // Presence implies true
+}
+
+ParseFunctionType Parser::parse_int_factory(const std::vector<std::string>& names)
+{
+    return [names](const std::vector<std::string_view>& args) -> std::any {
+        if (args.empty()) {
+            throw Exception(Status::MissingArgument, Context{ Param::OptionName, join_names(names) });
+        }
+        return std::stoi(std::string(args[0]));
+        };
+}
+
+ParseFunctionType Parser::parse_string_factory(const std::vector<std::string>& names)
+{
+    return [names](const std::vector<std::string_view>& args) -> std::any {
+        if (args.empty()) {
+            throw Exception(Status::MissingArgument, Context{ Param::OptionName, join_names(names) });
+        }
+        return std::string(args[0]);
+        };
+}
 } // namespace cppline

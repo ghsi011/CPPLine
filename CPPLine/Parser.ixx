@@ -41,25 +41,30 @@ public:
                                 size_t argument_count,
                                 std::any default_value = {});
 
-    template <typename... Args>
-    void add_option(Args&&... args) {
-        // Forward the arguments to try_add_option
-        auto result = try_add_option(std::forward<Args>(args)...);
-        throw_on_error(result);
-    }
-
     // Specific methods for common types
-    void add_bool(const std::vector<std::string>& names, const std::string& help);
-    void add_bool(const std::string& name, const std::string& help);
-    void add_bool(const std::string& help);
+    ExpectedVoid try_add_bool(const std::vector<std::string>& names, const std::string& help);
+    ExpectedVoid try_add_bool(const std::string& name, const std::string& help);
+    ExpectedVoid try_add_bool(const std::string& help);
 
-    void add_int(const std::vector<std::string>& names, const std::string& help, int default_value = 0);
-    void add_int(const std::string& name, const std::string& help, int default_value = 0);
-    void add_int(const std::string& help);
+    ExpectedVoid try_add_int(const std::vector<std::string>& names, const std::string& help, int default_value = 0);
+    ExpectedVoid try_add_int(const std::string& name, const std::string& help, int default_value = 0);
+    ExpectedVoid try_add_int(const std::string& help);
 
-    void add_string(const std::vector<std::string>& names, const std::string& help, const std::string& default_value = "");
-    void add_string(const std::string& name, const std::string& help, const std::string& default_value = "");
-    void add_string(const std::string& help);
+    ExpectedVoid try_add_string(const std::vector<std::string>& names, const std::string& help, const std::string& default_value = "");
+    ExpectedVoid try_add_string(const std::string& name, const std::string& help, const std::string& default_value = "");
+    ExpectedVoid try_add_string(const std::string& help);
+
+    template <typename... Args>
+    void add_option(Args&&... args);
+
+    template <typename... Args>
+    void add_bool(Args&&... args);
+
+    template <typename... Args>
+    void add_int(Args&&... args);
+
+    template <typename... Args>
+    void add_string(Args&&... args);
 
     // Parse the command-line arguments
     void parse(const std::vector<std::string_view>& arguments);
@@ -81,11 +86,44 @@ private:
 
     static std::string join_names(const std::vector<std::string>& names);
 
+    static std::any parse_bool(const std::vector<std::string_view>& args);
+    static ParseFunctionType parse_int_factory(const std::vector<std::string>& names);
+    static ParseFunctionType parse_string_factory(const std::vector<std::string>& names);
+
     std::string m_description;
     std::vector<Option> m_options;
     std::unordered_map<std::string, size_t> m_option_map; // Maps option names to indices in m_options
     std::vector<Option> m_positional_options; // Pointers to positional Option objects
 };
+
+template <typename ... Args>
+void Parser::add_option(Args&&... args)
+{
+    // Forward the arguments to try_add_option
+    auto result = try_add_option(std::forward<Args>(args)...);
+    throw_on_error(result);
+}
+
+template <typename ... Args>
+void Parser::add_bool(Args&&... args)
+{
+    auto result = try_add_bool(std::forward<Args>(args)...);
+    throw_on_error(result);
+}
+
+template <typename ... Args>
+void Parser::add_int(Args&&... args)
+{
+    auto result = try_add_int(std::forward<Args>(args)...);
+    throw_on_error(result);
+}
+
+template <typename ... Args>
+void Parser::add_string(Args&&... args)
+{
+    auto result = try_add_string(std::forward<Args>(args)...);
+    throw_on_error(result);
+}
 
 template <typename T>
 T Parser::get(const std::string& name) const
