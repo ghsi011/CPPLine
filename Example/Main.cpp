@@ -6,8 +6,8 @@ import ErrorHandling;
 using namespace cppline;
 using namespace cppline::errors;
 
-int main(int argc, char* argv[]) {
-
+int main(int argc, char* argv[])
+{
     Parser parser("Demo Application");
 
     // Register positional arguments
