@@ -154,6 +154,7 @@
     <ClCompile Include="ErrorHandling.ixx" />
     <ClCompile Include="Exceptions.cpp" />
     <ClCompile Include="Exceptions.ixx" />
+    <ClCompile Include="Expected.ixx" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Logger.ixx" />
     <ClCompile Include="Parser.cpp" />

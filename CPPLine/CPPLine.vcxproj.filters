@@ -13,18 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Module Interfaces">
+      <UniqueIdentifier>{62ae28b9-005c-48aa-976c-26b749132b80}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Parser.ixx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Parser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ErrorHandling.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Context.cpp">
@@ -39,8 +33,26 @@
     <ClCompile Include="Logger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Parser.ixx">
+      <Filter>Module Interfaces</Filter>
+    </ClCompile>
     <ClCompile Include="Logger.ixx">
-      <Filter>Source Files</Filter>
+      <Filter>Module Interfaces</Filter>
+    </ClCompile>
+    <ClCompile Include="ErrorHandling.ixx">
+      <Filter>Module Interfaces</Filter>
+    </ClCompile>
+    <ClCompile Include="Context.ixx">
+      <Filter>Module Interfaces</Filter>
+    </ClCompile>
+    <ClCompile Include="Enums.ixx">
+      <Filter>Module Interfaces</Filter>
+    </ClCompile>
+    <ClCompile Include="Exceptions.ixx">
+      <Filter>Module Interfaces</Filter>
+    </ClCompile>
+    <ClCompile Include="Expected.ixx">
+      <Filter>Module Interfaces</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

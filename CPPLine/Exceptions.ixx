@@ -18,6 +18,7 @@ public:
     virtual ~Exception() = default;
 
     virtual Context get_context() const;
+    virtual void throw_self() const; // To allow ExceptionPtr to throw DerivedException.
 
     Status get_error() const;
     std::source_location get_location() const;

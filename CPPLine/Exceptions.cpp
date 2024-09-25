@@ -27,6 +27,10 @@ Context Exception::get_context() const
 
     return exception_context << m_context;
 }
+void errors::Exception::throw_self() const
+{
+    throw* this;
+}
 std::source_location Exception::get_location() const
 {
     return m_location;
