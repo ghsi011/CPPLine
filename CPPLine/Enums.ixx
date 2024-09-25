@@ -15,25 +15,11 @@ export enum class Message {
     SignalRecieved = 1,
 };
 
-export enum class FileAccess
-{
-    Read,
-    Write,
-};
-
 export enum class EnumTypes
 {
     EnumTypes = 0,
     Status,
     Message,
-    FileAccess,
-    NewEnum,
-};
-
-export enum class NewEnum
-{
-    Value1,
-    Value2,
 };
 
 export using EnumsMap = std::map<EnumTypes, uint32_t>;
@@ -75,6 +61,9 @@ export enum class Status {
     InvalidValue,
     NotEnoughArguments,
     OptionAlreadySet,
+    OptionNotFound,
+    IndexOutOfRange,
+    UnknownEnum,
     UnknownError
 };
 
@@ -88,7 +77,10 @@ export enum class Param {
     SourceFile,
     SourceLine,
     SourceColumn,
-    Stacktrace
+    Stacktrace,
+    EnumValue,
+    EnumType,
+    Index,
 };
 
 std::string enum_to_string(EnumTypes enum_type, uint32_t enum_value);

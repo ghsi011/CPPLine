@@ -2,6 +2,7 @@ module ErrorHandling;
 
 import "magic_enum.hpp";
 import std;
+import :Exception;
 
 #define logger_add_enum(enum_name) \
 template <> \
@@ -13,9 +14,7 @@ namespace cppline::errors {
 
 logger_add_enum(Status)
 logger_add_enum(Message)
-logger_add_enum(FileAccess)
 logger_add_enum(EnumTypes)
-logger_add_enum(NewEnum)
 
 std::string enum_to_string(EnumTypes enum_type, uint32_t enum_value)
 {
@@ -27,12 +26,10 @@ std::string enum_to_string(EnumTypes enum_type, uint32_t enum_value)
         return magic_enum::enum_name(static_cast<Status>(enum_value)).data();
     case EnumTypes::Message:
         return magic_enum::enum_name(static_cast<Message>(enum_value)).data();
-    case EnumTypes::FileAccess:
-        return magic_enum::enum_name(static_cast<FileAccess>(enum_value)).data();
-    case EnumTypes::NewEnum:
-        return magic_enum::enum_name(static_cast<NewEnum>(enum_value)).data();
     default:
-        throw 1;
+        throw Exception(Status::UnknownEnum,
+                        Context{ Param::EnumType, std::to_string(static_cast<uint32_t>(enum_type)) } <<
+                        Context{ Param::EnumValue, std::to_string(enum_value) });
     }
 }
 

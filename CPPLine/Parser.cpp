@@ -8,38 +8,38 @@ using namespace cppline::errors;
 namespace cppline {
 
 Parser::Parser(const std::string& description)
-    : description_(description) {}
+    : m_description(description) {}
 
 // General method to add an option with multiple names
 void Parser::add_option(const std::vector<std::string>& names,
                         const std::string& help,
-                        std::function<std::any(const std::vector<std::string_view>&)> parse_function,
+                        ParseFunctionType parse_function,
                         size_t argument_count) {
     Option option{ names, help, argument_count, parse_function, std::any{}, false };
-    options_.push_back(option);
+    m_options.push_back(option);
 
-    size_t index = options_.size() - 1;
+    size_t index = m_options.size() - 1;
     for (const auto& name : names) {
-        option_map_[name] = index;
+        m_option_map[name] = index;
     }
 }
 
 // Overload for single name
 void Parser::add_option(const std::string& name,
                         const std::string& help,
-                        std::function<std::any(const std::vector<std::string_view>&)> parse_function,
+                        ParseFunctionType parse_function,
                         size_t argument_count) {
     add_option(std::vector<std::string>{ name }, help, parse_function, argument_count);
 }
 
 // Overload for positional argument (no names)
 void Parser::add_option(const std::string& help,
-                        std::function<std::any(const std::vector<std::string_view>&)> parse_function,
+                        ParseFunctionType parse_function,
                         size_t argument_count) {
     Option option{ {}, help, argument_count, parse_function, std::any{}, false };
-    options_.push_back(option);
+    m_options.push_back(option);
 
-    positional_options_.push_back(&options_.back());
+    m_positional_options.push_back(&m_options.back());
 }
 
 // Implement `add_bool` overloads
@@ -51,12 +51,12 @@ void Parser::add_bool(const std::vector<std::string>& names, const std::string& 
                0); // No arguments after the option name
     // Set default value for all names
     for (const auto& name : names) {
-        values_[name] = false; // Default is false
+        m_values[name] = false; // Default is false
     }
 }
 
 void Parser::add_bool(const std::string& name, const std::string& help) {
-    add_bool(std::vector<std::string>{ name }, help);
+    add_bool(std::vector{ name }, help);
 }
 
 void Parser::add_bool(const std::string& help) {
@@ -66,7 +66,7 @@ void Parser::add_bool(const std::string& help) {
                },
                0); // No arguments after the positional argument
     // For positional arguments, default value is false
-    positional_values_.push_back(false);
+    m_positional_values.push_back(false);
 }
 
 // Similar for `add_int` and `add_string`
@@ -82,12 +82,12 @@ void Parser::add_int(const std::vector<std::string>& names, const std::string& h
                1); // One argument after the name
     // Set default value for all names
     for (const auto& name : names) {
-        values_[name] = default_value;
+        m_values[name] = default_value;
     }
 }
 
 void Parser::add_int(const std::string& name, const std::string& help, int default_value) {
-    add_int(std::vector<std::string>{ name }, help, default_value);
+    add_int(std::vector{ name }, help, default_value);
 }
 
 void Parser::add_int(const std::string& help, int default_value) {
@@ -100,7 +100,7 @@ void Parser::add_int(const std::string& help, int default_value) {
                },
                1); // One argument after the positional argument
     // For positional arguments, store default value
-    positional_values_.push_back(default_value);
+    m_positional_values.push_back(default_value);
 }
 
 // Similarly for `add_string`
@@ -116,25 +116,25 @@ void Parser::add_string(const std::vector<std::string>& names, const std::string
                1); // One argument after the name
     // Set default value for all names
     for (const auto& name : names) {
-        values_[name] = default_value;
+        m_values[name] = default_value;
     }
 }
 
 void Parser::add_string(const std::string& name, const std::string& help, const std::string& default_value) {
-    add_string(std::vector<std::string>{ name }, help, default_value);
+    add_string(std::vector{ name }, help, default_value);
 }
 
 void Parser::add_string(const std::string& help, const std::string& default_value) {
     add_option(help,
                [](const std::vector<std::string_view>& args) -> std::any {
                    if (args.empty()) {
-                       throw Exception(Status::MissingArgument, Context{ Param::ErrorMessage, "Expected a value" });
+                       throw Exception(Status::MissingArgument);
                    }
                    return std::string(args[0]);
                },
                1); // One argument after the positional argument
     // For positional arguments, store default value
-    positional_values_.push_back(default_value);
+    m_positional_values.push_back(default_value);
 }
 
 void Parser::parse(const std::vector<std::string_view>& arguments) {
@@ -145,10 +145,10 @@ void Parser::parse(const std::vector<std::string_view>& arguments) {
     auto end = args.end();
 
     // First process positional arguments
-    positional_index_ = 0;
-    while (it != end && positional_index_ < positional_options_.size()) {
-        Option* option = positional_options_[positional_index_];
-        size_t args_to_consume = option->argument_count;
+    m_positional_index = 0;
+    while (it != end && m_positional_index < m_positional_options.size()) {
+        Option& option = *m_positional_options[m_positional_index];
+        const size_t args_to_consume = option.argument_count;
 
         if (std::distance(it, end) < static_cast<std::ptrdiff_t>(args_to_consume)) {
             throw Exception(Status::NotEnoughArguments,
@@ -165,26 +165,23 @@ void Parser::parse(const std::vector<std::string_view>& arguments) {
 
         // Parse and store the value
         try {
-            std::any value = option->parse_function(args_view);
-            option->value = value;
-            option->is_set = true;
+            std::any value = option.parse_function(args_view);
+            option.value = value;
+            option.is_set = true;
 
             // Store the value
-            if (positional_index_ < positional_values_.size()) {
-                positional_values_[positional_index_] = value;
+            if (m_positional_index < m_positional_values.size()) {
+                m_positional_values[m_positional_index] = value;
             }
             else {
-                positional_values_.push_back(value);
+                m_positional_values.push_back(value);
             }
-        }
-        catch (const Exception& e) {
-            throw e;
         }
         catch (const std::exception& e) {
             throw Exception(Status::ParsingError, Context{ Param::ErrorMessage, e.what() });
         }
 
-        ++positional_index_;
+        ++m_positional_index;
     }
 
     // Now process named options
@@ -192,10 +189,10 @@ void Parser::parse(const std::vector<std::string_view>& arguments) {
         std::string_view arg = *it;
 
         // Check if the argument matches any option name
-        auto opt_map_it = option_map_.find(std::string(arg));
-        if (opt_map_it != option_map_.end()) {
+        auto opt_map_it = m_option_map.find(std::string(arg));
+        if (opt_map_it != m_option_map.end()) {
             // Option found
-            Option& option = options_[opt_map_it->second];
+            Option& option = m_options[opt_map_it->second];
 
             size_t args_to_consume = option.argument_count;
             if (std::distance(it, end) - 1 < static_cast<std::ptrdiff_t>(args_to_consume)) {
@@ -225,11 +222,8 @@ void Parser::parse(const std::vector<std::string_view>& arguments) {
 
                 // Store the value for each alias
                 for (const auto& name : option.names) {
-                    values_[name] = value;
+                    m_values[name] = value;
                 }
-            }
-            catch (const Exception& e) {
-                throw e;
             }
             catch (const std::exception& e) {
                 throw Exception(Status::ParsingError, Context{ Param::OptionName, join_names(option.names) } << Context{
@@ -245,10 +239,10 @@ void Parser::parse(const std::vector<std::string_view>& arguments) {
 }
 
 void Parser::print_help() const {
-    std::cout << description_ << "\n\n";
+    std::cout << m_description << "\n\n";
     std::cout << "Options:\n";
 
-    for (const auto& option : options_) {
+    for (const auto& option : m_options) {
         std::string names_str;
         if (!option.names.empty()) {
             names_str = std::accumulate(
@@ -263,10 +257,6 @@ void Parser::print_help() const {
         }
         std::cout << "  " << names_str << "\t" << option.help << "\n";
     }
-}
-
-const std::vector<std::any>& Parser::positional_arguments() const {
-    return positional_values_;
 }
 
 std::string Parser::join_names(const std::vector<std::string>& names) {
