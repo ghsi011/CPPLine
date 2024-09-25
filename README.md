@@ -76,7 +76,8 @@ You can look at the Example project or the tests for more complete usage example
 
 ## TODO:
 - Finish introducing Expected overloads for Parser - allow a completely exception-free usage.
-- showcase usage of multiple enums in error handling - currently the infrastructure is there but its not used much.
+- Showcase usage of multiple enums in error handling - currently the infrastructure is there but it's not used much.
+- Polish - This code wasn't reviewed and still needs some refactoring. 
 
 ## Future Development:
 - Cross-Platfrom support - use CMAKE and GCC\clang to compile for Linux.
