@@ -85,3 +85,5 @@ You can look at the Example project or the tests for more complete usage example
 - Command-line parsing features: support subcommands, explicitly mark required arguments, better help, etc.
 
 Any contributions are welcome :)
+
+[MIT License](LICENSE.txt)
