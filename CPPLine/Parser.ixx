@@ -19,12 +19,14 @@ struct Option {
     bool is_set = false; // Indicates if the option was set
 };
 
+export using Aliases = std::vector<std::string>;
+
 export class Parser {
 public:
     explicit Parser(const std::string& description);
 
     // General method to add an option
-    ExpectedVoid try_add_option(const std::vector<std::string>& names,
+    ExpectedVoid try_add_option(const Aliases& names,
                                 const std::string& help,
                                 ParseFunctionType parse_function,
                                 size_t argument_count,
@@ -42,15 +44,15 @@ public:
                                 std::any default_value = {});
 
     // Specific methods for common types
-    ExpectedVoid try_add_bool(const std::vector<std::string>& names, const std::string& help);
+    ExpectedVoid try_add_bool(const Aliases& names, const std::string& help);
     ExpectedVoid try_add_bool(const std::string& name, const std::string& help);
     ExpectedVoid try_add_bool(const std::string& help);
 
-    ExpectedVoid try_add_int(const std::vector<std::string>& names, const std::string& help, int default_value = 0);
+    ExpectedVoid try_add_int(const Aliases& names, const std::string& help, int default_value = 0);
     ExpectedVoid try_add_int(const std::string& name, const std::string& help, int default_value = 0);
     ExpectedVoid try_add_int(const std::string& help);
 
-    ExpectedVoid try_add_string(const std::vector<std::string>& names, const std::string& help, const std::string& default_value = "");
+    ExpectedVoid try_add_string(const Aliases& names, const std::string& help, const std::string& default_value = "");
     ExpectedVoid try_add_string(const std::string& name, const std::string& help, const std::string& default_value = "");
     ExpectedVoid try_add_string(const std::string& help);
 
@@ -84,11 +86,11 @@ private:
     std::vector<std::string_view> parse_positional(const std::vector<std::string_view>& arguments);
     void parse_non_positional(const std::vector<std::string_view>& arguments);
 
-    static std::string join_names(const std::vector<std::string>& names);
+    static std::string join_names(const Aliases& names);
 
     static std::any parse_bool(const std::vector<std::string_view>& args);
-    static ParseFunctionType parse_int_factory(const std::vector<std::string>& names);
-    static ParseFunctionType parse_string_factory(const std::vector<std::string>& names);
+    static ParseFunctionType parse_int_factory(const Aliases& names);
+    static ParseFunctionType parse_string_factory(const Aliases& names);
 
     std::string m_description;
     std::vector<Option> m_options;
@@ -129,6 +131,10 @@ template <typename T>
 T Parser::get(const std::string& name) const
 {
     if (m_option_map.contains(name)) {
+        if(!m_options[m_option_map.at(name)].value.has_value())
+        {
+            throw Exception(Status::OptionNotSet, Context{ Param::OptionName, name });
+        }
         return std::any_cast<T>(m_options[m_option_map.at(name)].value);
     }
     throw Exception(Status::OptionNotFound, Context{ Param::OptionName, name }

@@ -10,7 +10,7 @@ namespace cppline {
 Parser::Parser(const std::string& description)
     : m_description(description) {}
 
-ExpectedVoid Parser::try_add_option(const std::vector<std::string>& names, const std::string& help,
+ExpectedVoid Parser::try_add_option(const Aliases& names, const std::string& help,
                                     ParseFunctionType parse_function, const size_t argument_count, std::any default_value)
 {
     if (std::ranges::any_of(names, [this](const std::string& name) { return m_option_map.contains(name); })) {
@@ -44,7 +44,7 @@ ExpectedVoid Parser::try_add_option(const std::string& help, ParseFunctionType p
     return success();
 }
 
-ExpectedVoid Parser::try_add_bool(const std::vector<std::string>& names, const std::string& help) {
+ExpectedVoid Parser::try_add_bool(const Aliases& names, const std::string& help) {
     return try_add_option(names, help,
                           parse_bool,
                           0,
@@ -62,7 +62,7 @@ ExpectedVoid Parser::try_add_bool(const std::string& help) {
                           false); // No arguments after the positional argument
 }
 
-ExpectedVoid Parser::try_add_int(const std::vector<std::string>& names, const std::string& help, int default_value) {
+ExpectedVoid Parser::try_add_int(const Aliases& names, const std::string& help, int default_value) {
     return try_add_option(names, help,
                           parse_int_factory(names),
                           1,
@@ -79,7 +79,7 @@ ExpectedVoid Parser::try_add_int(const std::string& help) {
                           1); // One argument after the positional argument
 }
 
-ExpectedVoid Parser::try_add_string(const std::vector<std::string>& names, const std::string& help, const std::string& default_value) {
+ExpectedVoid Parser::try_add_string(const Aliases& names, const std::string& help, const std::string& default_value) {
     return try_add_option(names, help,
                           parse_string_factory(names),
                           1,
@@ -191,7 +191,7 @@ void Parser::parse_non_positional(const std::vector<std::string_view>& arguments
     }
 }
 
-std::string Parser::join_names(const std::vector<std::string>& names) {
+std::string Parser::join_names(const Aliases& names) {
     if (names.size() == 1) {
         return names[0];
     }
@@ -209,7 +209,7 @@ std::any Parser::parse_bool(const std::vector<std::string_view>&)
     return true; // Presence implies true
 }
 
-ParseFunctionType Parser::parse_int_factory(const std::vector<std::string>& names)
+ParseFunctionType Parser::parse_int_factory(const Aliases& names)
 {
     return [names](const std::vector<std::string_view>& args) -> std::any {
         if (args.empty()) {
@@ -219,7 +219,7 @@ ParseFunctionType Parser::parse_int_factory(const std::vector<std::string>& name
         };
 }
 
-ParseFunctionType Parser::parse_string_factory(const std::vector<std::string>& names)
+ParseFunctionType Parser::parse_string_factory(const Aliases& names)
 {
     return [names](const std::vector<std::string_view>& args) -> std::any {
         if (args.empty()) {

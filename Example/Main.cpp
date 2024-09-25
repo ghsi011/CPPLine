@@ -3,22 +3,27 @@ import std;
 import CPPLine;
 import ErrorHandling;
 
+using namespace cppline;
 using namespace cppline::errors;
 
 int main(int argc, char* argv[]) {
-    using namespace cppline;
 
     Parser parser("Demo Application");
 
-    // Register options with aliases
-    parser.add_bool(std::vector<std::string>{ "--verbose", "-v" }, "Enable verbose output");
-    parser.add_int(std::vector<std::string>{ "-n", "--number" }, "Set the number", 10);
+    // Register positional arguments
+    parser.add_string("First positional argument");
+    parser.add_int("Second positional argument");
+
     parser.add_string("--name", "Set the name", "default");
 
+    // Register option with aliases
+    parser.add_bool(Aliases{ "--verbose", "-v" }, "Enable verbose output");
+
+    // Custom parser for space delimited key value pairs
     parser.add_option("--keyvalue", "Set a key-value pair",
                       [](const std::vector<std::string_view>& args) -> std::any {
                           if (args.size() < 2) {
-                              throw Exception(Status::MissingArgument, Context{ Param::ErrorMessage, "Expected key and value" });
+                              throw Exception(Status::MissingArgument, Context{} << Message::ExpectedKeyAndValue);
                           }
                           std::string key = std::string(args[0]);
                           std::string value = std::string(args[1]);
@@ -26,9 +31,20 @@ int main(int argc, char* argv[]) {
                       },
                       2); // Two arguments after the name
 
-    // Register positional arguments
-    parser.add_string("First positional argument");
-    parser.add_int("Second positional argument");
+    // Try register option and handle error cases manually
+    ExpectedVoid add_result = parser.try_add_int(Aliases{ "-n", "--number" }, "Set the number", 10);
+    if (!add_result.has_value()) {
+        if (add_result.error()->get_error() == Status::OptionAlreadyDefined) {
+            // we log and ignore here - this is a somewhat forced example of different logic based on the error condition
+            Logger::log("Option already defined", add_result.error()->get_context());
+        }
+        else
+        {
+            Logger::log("Error adding option", add_result.error());
+            add_result.error()->throw_self(); // don't ignore other errors.
+        }
+    }
+
 
     // Collect arguments
     std::vector<std::string_view> arguments;
@@ -73,6 +89,14 @@ int main(int argc, char* argv[]) {
     }
     catch (const Exception& ex) {
         Logger::log("Retrieval error", ex);
+        return 1;
+    }
+    catch (const std::exception& ex) {
+        Logger::log(ex.what());
+        return 1;
+    }
+    catch (...) {
+        Logger::log("Unknown error occurred");
         return 1;
     }
 

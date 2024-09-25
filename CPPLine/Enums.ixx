@@ -9,10 +9,7 @@ export template <typename T>
 concept EnumType = std::is_enum_v<T>;
 
 export enum class Message {
-    Hello = 0,
-    Godbye = 1,
-    SendSignal = 1,
-    SignalRecieved = 1,
+    ExpectedKeyAndValue,
 };
 
 export enum class EnumTypes
@@ -65,7 +62,8 @@ export enum class Status {
     IndexOutOfRange,
     UnknownEnum,
     UnknownError,
-    OptionAlreadyDefined
+    OptionAlreadyDefined,
+    OptionNotSet
 };
 
 export enum class Param {
