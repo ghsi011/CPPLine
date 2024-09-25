@@ -10,14 +10,11 @@ namespace cppline {
 Parser::Parser(const std::string& description)
     : m_description(description) {}
 
-// General method to add an option with multiple names
-void Parser::add_option(const std::vector<std::string>& names,
-                        const std::string& help,
-                        ParseFunctionType parse_function,
-                        size_t argument_count,
-                        std::any default_value) {
+ExpectedVoid Parser::try_add_option(const std::vector<std::string>& names, const std::string& help,
+                                    ParseFunctionType parse_function, const size_t argument_count, std::any default_value)
+{
     if (std::ranges::any_of(names, [this](const std::string& name) { return m_option_map.contains(name); })) {
-        throw Exception(Status::OptionAlreadyDefined, Context{ Param::OptionName, join_names(names) });
+        return make_unexpected(Status::OptionAlreadyDefined, Context{ Param::OptionName, join_names(names) });
     }
 
     Option option{ names, help, argument_count, parse_function, default_value, false };
@@ -27,26 +24,25 @@ void Parser::add_option(const std::vector<std::string>& names,
     for (const auto& name : names) {
         m_option_map[name] = index;
     }
+
+    return success();
 }
 
-// Overload for single name
-void Parser::add_option(const std::string& name,
-                        const std::string& help,
-                        ParseFunctionType parse_function,
-                        size_t argument_count,
-                        std::any default_value) {
-    add_option(std::vector<std::string>{ name }, help, parse_function, argument_count, default_value);
+ExpectedVoid Parser::try_add_option(const std::string& name, const std::string& help, ParseFunctionType parse_function,
+    size_t argument_count, std::any default_value)
+{
+    return try_add_option(std::vector{ name }, help, parse_function, argument_count, default_value);
 }
 
-// Overload for positional argument (no names)
-void Parser::add_option(const std::string& help,
-                        ParseFunctionType parse_function,
-                        size_t argument_count,
-                        std::any default_value) {
+ExpectedVoid Parser::try_add_option(const std::string& help, ParseFunctionType parse_function, size_t argument_count,
+    std::any default_value)
+{
     Option option{ {}, help, argument_count, parse_function, default_value, false };
     m_options.push_back(option);
 
     m_positional_options.push_back(m_options.back());
+
+    return success();
 }
 
 // Implement `add_bool` overloads
@@ -163,7 +159,7 @@ std::vector<std::string_view> Parser::parse_positional(const std::vector<std::st
     {
         const size_t args_to_consume = option.argument_count;
 
-        if (remaining_args.size() < static_cast<std::ptrdiff_t>(args_to_consume)) {
+        if (remaining_args.size() < args_to_consume) {
             const auto context = Context{ Param::ExpectedArgumentCount, std::to_string(args_to_consume) } <<
                 Context{ Param::ReceivedArgumentCount, std::to_string(remaining_args.size()) };
             throw Exception(Status::NotEnoughArguments, context);

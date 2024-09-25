@@ -24,23 +24,29 @@ public:
     explicit Parser(const std::string& description);
 
     // General method to add an option
-    void add_option(const std::vector<std::string>& names,
-                    const std::string& help,
-                    ParseFunctionType parse_function,
-                    size_t argument_count,
-                    std::any default_value = {});
+    ExpectedVoid try_add_option(const std::vector<std::string>& names,
+                                const std::string& help,
+                                ParseFunctionType parse_function,
+                                size_t argument_count,
+                                std::any default_value = {});
 
-    // Overloads for single name and positional arguments
-    void add_option(const std::string& name,
-                    const std::string& help,
-                    ParseFunctionType parse_function,
-                    size_t argument_count,
-                    std::any default_value = {});
+    ExpectedVoid try_add_option(const std::string& name,
+                                const std::string& help,
+                                ParseFunctionType parse_function,
+                                size_t argument_count,
+                                std::any default_value = {});
 
-    void add_option(const std::string& help,
-                    ParseFunctionType parse_function,
-                    size_t argument_count,
-                    std::any default_value = {});
+    ExpectedVoid try_add_option(const std::string& help,
+                                ParseFunctionType parse_function,
+                                size_t argument_count,
+                                std::any default_value = {});
+
+    template <typename... Args>
+    void add_option(Args&&... args) {
+        // Forward the arguments to try_add_option
+        auto result = try_add_option(std::forward<Args>(args)...);
+        throw_on_error(result);
+    }
 
     // Specific methods for common types
     void add_bool(const std::vector<std::string>& names, const std::string& help);
