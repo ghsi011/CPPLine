@@ -7,9 +7,9 @@ import :Context;
 import std;
 import "magic_enum.hpp";
 
-export namespace cppline::errors {
+namespace cppline::errors {
 
-class Logger final
+export class Logger final
 {
 public:
     static void log(const std::string& message);

@@ -27,17 +27,20 @@ public:
     void add_option(const std::vector<std::string>& names,
                     const std::string& help,
                     ParseFunctionType parse_function,
-                    size_t argument_count);
+                    size_t argument_count,
+                    std::any default_value = {});
 
     // Overloads for single name and positional arguments
     void add_option(const std::string& name,
                     const std::string& help,
                     ParseFunctionType parse_function,
-                    size_t argument_count);
+                    size_t argument_count,
+                    std::any default_value = {});
 
     void add_option(const std::string& help,
                     ParseFunctionType parse_function,
-                    size_t argument_count);
+                    size_t argument_count,
+                    std::any default_value = {});
 
     // Specific methods for common types
     void add_bool(const std::vector<std::string>& names, const std::string& help);
@@ -46,11 +49,11 @@ public:
 
     void add_int(const std::vector<std::string>& names, const std::string& help, int default_value = 0);
     void add_int(const std::string& name, const std::string& help, int default_value = 0);
-    void add_int(const std::string& help, int default_value = 0);
+    void add_int(const std::string& help);
 
     void add_string(const std::vector<std::string>& names, const std::string& help, const std::string& default_value = "");
     void add_string(const std::string& name, const std::string& help, const std::string& default_value = "");
-    void add_string(const std::string& help, const std::string& default_value = "");
+    void add_string(const std::string& help);
 
     // Parse the command-line arguments
     void parse(const std::vector<std::string_view>& arguments);
@@ -67,23 +70,23 @@ public:
     void print_help() const;
 
 private:
+    std::vector<std::string_view> parse_positional(const std::vector<std::string_view>& arguments);
+    void parse_non_positional(const std::vector<std::string_view>& arguments);
+
     static std::string join_names(const std::vector<std::string>& names);
 
     std::string m_description;
     std::vector<Option> m_options;
-    std::unordered_map<std::string, size_t> m_option_map; // Maps option names to indices in options_
-    std::unordered_map<std::string, std::any> m_values;
-    std::vector<std::any> m_positional_values; // Stores parsed positional argument values
-    std::vector<Option*> m_positional_options; // Pointers to positional Option objects
-    size_t m_positional_index = 0; // Index to keep track of which positional argument we're processing
+    std::unordered_map<std::string, size_t> m_option_map; // Maps option names to indices in m_options
+    std::vector<Option> m_positional_options; // Pointers to positional Option objects
 };
 
 template <typename T>
 T Parser::get(const std::string& name) const
 {
-    auto it = m_values.find(name);
-    if (it != m_values.end()) {
-        return std::any_cast<T>(it->second);
+    auto it = m_option_map.find(name);
+    if (it != m_option_map.end()) {
+        return std::any_cast<T>(m_options[it->second].value);
     }
     throw Exception(Status::OptionNotFound, Context{ Param::OptionName, name }
     );
@@ -92,9 +95,9 @@ T Parser::get(const std::string& name) const
 template <typename T>
 T Parser::get_positional(const size_t index) const
 {
-    if (index >= m_positional_values.size()) {
+    if (index >= m_positional_options.size()) {
         throw Exception(Status::IndexOutOfRange, Context{ Param::Index, std::to_string(index) });
     }
-    return std::any_cast<T>(m_positional_values[index]);
+    return std::any_cast<T>(m_positional_options[index].value);
 }
 } // namespace cppline

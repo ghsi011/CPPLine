@@ -64,7 +64,8 @@ export enum class Status {
     OptionNotFound,
     IndexOutOfRange,
     UnknownEnum,
-    UnknownError
+    UnknownError,
+    OptionAlreadyDefined
 };
 
 export enum class Param {
