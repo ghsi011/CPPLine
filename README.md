@@ -71,7 +71,7 @@ You can look at the Example project or the tests for more complete usage example
 
 ## Requirements
 
-- C++20 compatible compiler with modules support (e.g., GCC 10+, Clang 10+, MSVC 19.28+).
+- C++20 compatible compiler with modules support.
 - [Google Test](https://github.com/google/googletest) (for running tests).
 
 ## TODO:
