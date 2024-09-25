@@ -84,9 +84,8 @@ private:
 template <typename T>
 T Parser::get(const std::string& name) const
 {
-    auto it = m_option_map.find(name);
-    if (it != m_option_map.end()) {
-        return std::any_cast<T>(m_options[it->second].value);
+    if (m_option_map.contains(name)) {
+        return std::any_cast<T>(m_options[m_option_map.at(name)].value);
     }
     throw Exception(Status::OptionNotFound, Context{ Param::OptionName, name }
     );
