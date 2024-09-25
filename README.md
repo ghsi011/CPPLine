@@ -9,7 +9,7 @@ It showcases using multiple modules and module partitions with a clean interface
 It features a custom mix of std::expected and exceptions for error handling - allowing the user to choose which to use and when.
 C++23 stacktraces are used along with other practical utilities for error management.
 
-Development leveraged OpenAI O1-preview and mini-modules for refactoring and design insights, as well as practical things like string parsing. 
+Development leveraged OpenAI O1-preview and mini-modules, which were useful, though most AI-generated code had to be heavily refactored. 
 
 ## Features
 
