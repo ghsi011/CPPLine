@@ -38,9 +38,8 @@ ExpectedVoid Parser::try_add_option(const std::string& help, ParseFunctionType p
                                     std::any default_value)
 {
     Option option{ {}, help, argument_count, parse_function, default_value, false };
-    m_options.push_back(option);
 
-    m_positional_options.push_back(m_options.back());
+    m_positional_options.push_back(option);
 
     return success();
 }
@@ -105,8 +104,16 @@ void Parser::parse(const std::vector<std::string_view>& arguments) {
 }
 
 void Parser::print_help() const {
-    std::cout << m_description << "\n\n";
-    std::cout << "Options:\n";
+
+    std::string usage = "Usage: ";
+    std::string help;
+
+    for (const auto& positional_option : m_positional_options) {
+        usage += std::format("<{}> ", positional_option.help);
+        help += std::format("{} \n", positional_option.help);
+    }
+
+    help += "Options:\n";
 
     for (const auto& option : m_options) {
         std::string names_str;
@@ -118,11 +125,13 @@ void Parser::print_help() const {
                 }
             );
         }
-        else {
-            names_str = "<positional>";
-        }
-        std::cout << "  " << names_str << "\t" << option.help << "\n";
+        usage += std::format("[{}] ", names_str);
+        help += std::format("  {} \t{}\n", names_str, option.help);
     }
+
+    std::cout << m_description << std::endl;
+    std::cout << usage << std::endl;
+    std::cout << help << std::endl;
 }
 
 std::vector<std::string_view> Parser::parse_positional(const std::vector<std::string_view>& arguments)
