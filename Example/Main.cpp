@@ -14,16 +14,17 @@ int main(int argc, char* argv[]) {
     parser.add_string("First positional argument");
     parser.add_int("Second positional argument");
 
+    // Simple optional argument.
     parser.add_string("--name", "Set the name", "default");
 
     // Register option with aliases
     parser.add_bool(Aliases{ "--verbose", "-v" }, "Enable verbose output");
 
-    // Custom parser for space delimited key value pairs
+    // Custom parser for space delimited key value pairs, no default value
     parser.add_option("--keyvalue", "Set a key-value pair",
                       [](const std::vector<std::string_view>& args) -> std::any {
                           if (args.size() < 2) {
-                              throw Exception(Status::MissingArgument, Context{} << Message::ExpectedKeyAndValue);
+                              throw Exception(Status::MissingArgument, Context{} << Message::ExpectedKeyAndValue); // Note logging of enum value.
                           }
                           std::string key = std::string(args[0]);
                           std::string value = std::string(args[1]);
@@ -35,7 +36,7 @@ int main(int argc, char* argv[]) {
     ExpectedVoid add_result = parser.try_add_int(Aliases{ "-n", "--number" }, "Set the number", 10);
     if (!add_result.has_value()) {
         if (add_result.error()->get_error() == Status::OptionAlreadyDefined) {
-            // we log and ignore here - this is a somewhat forced example of different logic based on the error condition
+            // We log and ignore here - A somewhat forced example of applying different logic based on the error condition.
             Logger::log("Option already defined", add_result.error()->get_context());
         }
         else
