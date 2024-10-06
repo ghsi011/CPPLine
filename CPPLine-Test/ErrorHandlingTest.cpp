@@ -73,11 +73,13 @@ TEST(ErrorsTest, ExceptionsBetterOnHappyFlow) {
         expected_times.push_back(expected_time);
     }
 
-    double avg_exception_time = std::accumulate(exception_times.begin(), exception_times.end(), 0.0) / runs;
-    double avg_expected_time = std::accumulate(expected_times.begin(), expected_times.end(), 0.0) / runs;
+    const double avg_exception_time = std::accumulate(exception_times.begin(), exception_times.end(), 0.0) / runs;
+    const double avg_expected_time = std::accumulate(expected_times.begin(), expected_times.end(), 0.0) / runs;
 
     std::cout << "Average Exception Time (Happy Flow): " << avg_exception_time << " microseconds\n";
     std::cout << "Average Expected Time (Happy Flow): " << avg_expected_time << " microseconds\n";
+
+    std::cout << "difference in seconds " << (avg_expected_time - avg_exception_time) / 1000000.0 << std::endl;
 
     EXPECT_LT(avg_exception_time, avg_expected_time) << "Exceptions should perform better on the happy path.";
 }
@@ -117,17 +119,23 @@ TEST(ErrorsTest, ExpectedBetterOnSadFlow) {
         expected_times.push_back(expected_time);
     }
 
-    double avg_exception_time = std::accumulate(exception_times.begin(), exception_times.end(), 0.0) / runs;
-    double avg_expected_time = std::accumulate(expected_times.begin(), expected_times.end(), 0.0) / runs;
+    const double avg_exception_time = std::accumulate(exception_times.begin(), exception_times.end(), 0.0) / runs;
+    const double avg_expected_time = std::accumulate(expected_times.begin(), expected_times.end(), 0.0) / runs;
 
     std::cout << "Average Exception Time (Sad Flow): " << avg_exception_time << " microseconds\n";
     std::cout << "Average Expected Time (Sad Flow): " << avg_expected_time << " microseconds\n";
 
+    std::cout << "difference in seconds " << (avg_exception_time - avg_expected_time) / 1000000.0 << std::endl;
+
     EXPECT_LT(avg_expected_time, avg_exception_time) << "Expected should perform better on the sad path.";
 }
 
-_declspec(noinline) void innermost_function_exception(volatile int& sink, bool should_throw) {
+_declspec(noinline) void recursive_function_exception(volatile int& sink, bool should_throw, int number_of_calls) {
     sink += 1;
+    if (number_of_calls != 0) {
+        recursive_function_exception(sink, should_throw, number_of_calls - 1);
+    }
+
     if (should_throw) {
         throw Exception(
             Status::UnknownError,
@@ -136,18 +144,16 @@ _declspec(noinline) void innermost_function_exception(volatile int& sink, bool s
     }
 }
 
-_declspec(noinline) void middle_function_exception(volatile int& sink, bool should_throw) {
-    sink += 1;
-    innermost_function_exception(sink, should_throw);
-}
+_declspec(noinline) ExpectedVoid recursive_function_expected(volatile int& sink, bool should_fail, int number_of_calls) {
+    if (number_of_calls != 0) {
+        auto result = recursive_function_expected(sink, should_fail, number_of_calls - 1);
+        if (!result.has_value()) {
+            sink += 1;
+            return result;
+        }
+        return success();
+    }
 
-_declspec(noinline) void outer_function_exception(volatile int& sink, bool should_throw) {
-    sink += 1;
-    middle_function_exception(sink, should_throw);
-}
-
-_declspec(noinline) ExpectedVoid innermost_function_expected(volatile int& sink, bool should_fail) {
-    sink += 1;
     if (should_fail) {
         return make_unexpected(
             Status::UnknownError,
@@ -157,25 +163,9 @@ _declspec(noinline) ExpectedVoid innermost_function_expected(volatile int& sink,
     return success();
 }
 
-_declspec(noinline) ExpectedVoid middle_function_expected(volatile int& sink, bool should_fail) {
-    sink += 1;
-    auto result = innermost_function_expected(sink, should_fail);
-    if (!result.has_value()) {
-        return result;
-    }
-    return success();
-}
+static constexpr int RECURSION_DEPTH = 10;
 
-_declspec(noinline) ExpectedVoid outer_function_expected(volatile int& sink, bool should_fail) {
-    sink += 1;
-    auto result = middle_function_expected(sink, should_fail);
-    if (!result.has_value()) {
-        return result;
-    }
-    return success();
-}
-
-TEST(ErrorsTest, NestedExceptionsHappyFlow) {
+TEST(ErrorsTest, NestedExceptionsBetterOnHappyFlow) {
     constexpr int iterations = 1'000'000;
     constexpr int runs = 5;
     std::vector<double> exception_times;
@@ -188,9 +178,9 @@ TEST(ErrorsTest, NestedExceptionsHappyFlow) {
         auto exception_time = measure_execution_time([&]() {
             for (int i = 0; i < iterations; ++i) {
                 try {
-                    outer_function_exception(sink, false); // No exception thrown
+                    recursive_function_exception(sink, false, RECURSION_DEPTH); // No exception thrown
                 }
-                catch (const Exception&) {
+                catch (const Exception& ) {
                     // Should not occur
                 }
             }
@@ -199,7 +189,7 @@ TEST(ErrorsTest, NestedExceptionsHappyFlow) {
         // Expected version (happy flow, no errors)
         auto expected_time = measure_execution_time([&]() {
             for (int i = 0; i < iterations; ++i) {
-                auto result = outer_function_expected(sink, false); // No error
+                auto result = recursive_function_expected(sink, false, RECURSION_DEPTH); // No error
                 if (!result.has_value()) {
                     // Should not occur
                 }
@@ -216,10 +206,12 @@ TEST(ErrorsTest, NestedExceptionsHappyFlow) {
     std::cout << "Average Nested Exception Time (Happy Flow): " << avg_exception_time << " microseconds\n";
     std::cout << "Average Nested Expected Time (Happy Flow): " << avg_expected_time << " microseconds\n";
 
+    std::cout << "difference in seconds " << (avg_expected_time - avg_exception_time) / 1000000.0 << std::endl;
+
     EXPECT_LT(avg_exception_time, avg_expected_time) << "Exceptions should perform better on the happy path with nesting.";
 }
 
-TEST(ErrorsTest, NestedExceptionsSadFlow) {
+TEST(ErrorsTest, NestedExpectedBetterOnSadFlow) {
     constexpr int iterations = 100'000;
     constexpr int runs = 5;
     std::vector<double> exception_times;
@@ -232,7 +224,7 @@ TEST(ErrorsTest, NestedExceptionsSadFlow) {
         auto exception_time = measure_execution_time([&]() {
             for (int i = 0; i < iterations; ++i) {
                 try {
-                    outer_function_exception(sink, true); // Exception thrown
+                    recursive_function_exception(sink, true, RECURSION_DEPTH); // Exception thrown
                 }
                 catch (const Exception&) {
                     // Handle the exception
@@ -245,10 +237,10 @@ TEST(ErrorsTest, NestedExceptionsSadFlow) {
         // Expected version (sad flow, errors occur)
         auto expected_time = measure_execution_time([&]() {
             for (int i = 0; i < iterations; ++i) {
-                auto result = outer_function_expected(sink, true); // Error occurs
+                auto result = recursive_function_expected(sink, true, RECURSION_DEPTH); // Error occurs
                 if (!result.has_value()) {
                     // Handle the error
-                    //Logger::log("error", result.error());
+                    // Logger::log("error", result.error());
                     sink += 1;
                 }
             }
@@ -263,6 +255,8 @@ TEST(ErrorsTest, NestedExceptionsSadFlow) {
 
     std::cout << "Average Nested Exception Time (Sad Flow): " << avg_exception_time << " microseconds\n";
     std::cout << "Average Nested Expected Time (Sad Flow): " << avg_expected_time << " microseconds\n";
+
+    std::cout << "difference in seconds " << (avg_exception_time - avg_expected_time) / 1000000.0 << std::endl;
 
     EXPECT_LT(avg_expected_time, avg_exception_time) << "Expected should perform better on the sad path with nesting.";
 }
