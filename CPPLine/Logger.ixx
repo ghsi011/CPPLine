@@ -14,7 +14,6 @@ export class Logger final
 public:
     static void log(const std::string& message);
     static void log(const std::string& message, const Exception& exception);
-    static void log(const std::string& message, const ExceptionPtr& exception);
     static void log(const Context& context,
                     const std::source_location& location = std::source_location::current());
 

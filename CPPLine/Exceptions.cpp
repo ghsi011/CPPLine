@@ -41,12 +41,4 @@ std::stacktrace Exception::get_stacktrace() const
     return m_stacktrace;
 }
 
-ExceptionPtr Exception::make_exception(Status status,
-                                       Context context,
-                                       std::source_location location,
-                                       std::stacktrace stacktrace)
-{
-    return std::make_unique<Exception>(status, context, location, stacktrace);
-}
-
 } // namespace cppline

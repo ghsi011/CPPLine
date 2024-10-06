@@ -5,8 +5,8 @@ import :Exception;
 
 export namespace cppline::errors {
 
-using ExpectedVoid = std::expected<void, ExceptionPtr>;
-using ExpectedString = std::expected<std::string, ExceptionPtr>;
+using ExpectedVoid = std::expected<void, Exception>;
+using ExpectedString = std::expected<std::string, Exception>;
 
 ExpectedVoid success()
 {
@@ -14,14 +14,14 @@ ExpectedVoid success()
 }
 
 template <typename T >
-using Expected = std::expected<T, ExceptionPtr>;
+using Expected = std::expected<T, Exception>;
 
-std::unexpected<ExceptionPtr> make_unexpected(Status status,
-                                              Context context = StringContext{},
-                                              std::source_location location = std::source_location::current(),
-                                              std::stacktrace stacktrace = std::stacktrace::current())
+inline std::unexpected<Exception> make_unexpected(const Status status,
+                                           Context context = StringContext{},
+                                           const std::source_location& location = std::source_location::current(),
+                                           const std::stacktrace& stacktrace = std::stacktrace::current())
 {
-    return std::unexpected(Exception::make_exception(status, std::move(context), location, stacktrace));
+    return std::unexpected(Exception(status, std::move(context), location, stacktrace));
 }
 
 template <typename T >
@@ -29,7 +29,7 @@ void throw_on_error(const Expected<T>& expected)
 {
     if (!expected.has_value())
     {
-        expected.error()->throw_self();
+        expected.error().throw_self();
     }
 }
 }

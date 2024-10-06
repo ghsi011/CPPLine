@@ -6,7 +6,7 @@ def is_source_file(filename):
     """
     source_extensions = {
         '.cpp', '.hpp', '.h', '.ixx', '.cppm', '.cxx', '.c++', '.cc', '.c',
-        '.hxx', '.hh', '.h++', '.vcxproj', ".txt"
+        '.hxx', '.hh', '.h++', '.vcxproj'
     }
     _, ext = os.path.splitext(filename)
     return ext.lower() in source_extensions

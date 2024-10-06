@@ -23,11 +23,6 @@ void Logger::log(const std::string& message, const Exception& exception)
     std::cout << exception_info << std::endl;
 }
 
-void Logger::log(const std::string& message, const ExceptionPtr& exception)
-{
-    log(message, *exception);
-}
-
 void Logger::log(const Context& context, const std::source_location& location)
 {
     const std::string context_info

@@ -6,28 +6,22 @@ import :Enums;
 
 export namespace cppline::errors {
 class Exception;
-using ExceptionPtr = std::unique_ptr<Exception>;
 
-class Exception
+class Exception final
 {
 public:
     explicit Exception(Status status,
                        Context context = StringContext{},
                        std::source_location location = std::source_location::current(),
                        std::stacktrace stacktrace = std::stacktrace::current());
-    virtual ~Exception() = default;
+    ~Exception() = default;
 
-    virtual Context get_context() const;
-    virtual void throw_self() const; // To allow ExceptionPtr to throw DerivedException.
+    Context get_context() const;
+    void throw_self() const; // To allow ExceptionPtr to throw DerivedException.
 
     Status get_error() const;
     std::source_location get_location() const;
     std::stacktrace get_stacktrace() const;
-
-    static ExceptionPtr make_exception(Status status,
-                                       Context context = StringContext{},
-                                       std::source_location location = std::source_location::current(),
-                                       std::stacktrace stacktrace = std::stacktrace::current());
 
     Exception(const Exception&) = default;             // Copy Ctor
     Exception(Exception&&) = default;                  // Move Ctor
