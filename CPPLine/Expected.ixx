@@ -24,6 +24,11 @@ inline std::unexpected<Exception> make_unexpected(const Status status,
     return std::unexpected(Exception(status, std::move(context), location, stacktrace));
 }
 
+inline std::unexpected<Exception> make_unexpected(Exception&& exception)
+{
+    return std::unexpected(std::move(exception));
+}
+
 template <typename T >
 void throw_on_error(const Expected<T>& expected)
 {

@@ -1,14 +1,13 @@
-// Parser.ixx
 export module CPPLine;
 
 import std;
-export import ErrorHandling; // Import the error handling module
+export import ErrorHandling;
 
 using namespace cppline::errors;
 
 namespace cppline {
 
-export using ParseFunctionType = std::function<std::any(const std::vector<std::string_view>&)>;
+export using ParseFunctionType = std::function<Expected<std::any>(const std::vector<std::string_view>&)>;
 
 struct Option {
     std::vector<std::string> names; // Empty names indicate a positional argument
@@ -71,24 +70,35 @@ public:
     // Parse the command-line arguments
     void parse(const std::vector<std::string_view>& arguments);
 
+    // Expected-based parse
+    ExpectedVoid try_parse(const std::vector<std::string_view>& arguments);
+
     // Retrieve the parsed value
     template <typename T>
     T get(const std::string& name) const;
+
+    // Expected-based get
+    template <typename T>
+    Expected<T> try_get(const std::string& name) const;
 
     // Retrieve positional argument by index
     template <typename T>
     T get_positional(size_t index) const;
 
+    // Expected-based get_positional
+    template <typename T>
+    Expected<T> try_get_positional(size_t index) const;
+
     // Print help message
     void print_help() const;
 
 private:
-    std::vector<std::string_view> parse_positional(const std::vector<std::string_view>& arguments);
-    void parse_non_positional(const std::vector<std::string_view>& arguments);
+    Expected<std::vector<std::string_view>> parse_positional(const std::vector<std::string_view>& arguments);
+    ExpectedVoid parse_non_positional(const std::vector<std::string_view>& arguments);
 
     static std::string join_names(const Aliases& names);
 
-    static std::any parse_bool(const std::vector<std::string_view>& args);
+    static Expected<std::any> parse_bool(const std::vector<std::string_view>& args);
     static ParseFunctionType parse_int_factory(const Aliases& names);
     static ParseFunctionType parse_string_factory(const Aliases& names);
 
@@ -98,29 +108,28 @@ private:
     std::vector<Option> m_positional_options;
 };
 
-template <typename ... Args>
+template <typename... Args>
 void Parser::add_option(Args&&... args)
 {
-    // Forward the arguments to try_add_option
     auto result = try_add_option(std::forward<Args>(args)...);
     throw_on_error(result);
 }
 
-template <typename ... Args>
+template <typename... Args>
 void Parser::add_bool(Args&&... args)
 {
     auto result = try_add_bool(std::forward<Args>(args)...);
     throw_on_error(result);
 }
 
-template <typename ... Args>
+template <typename... Args>
 void Parser::add_int(Args&&... args)
 {
     auto result = try_add_int(std::forward<Args>(args)...);
     throw_on_error(result);
 }
 
-template <typename ... Args>
+template <typename... Args>
 void Parser::add_string(Args&&... args)
 {
     auto result = try_add_string(std::forward<Args>(args)...);
@@ -130,23 +139,53 @@ void Parser::add_string(Args&&... args)
 template <typename T>
 T Parser::get(const std::string& name) const
 {
+    auto result = try_get<T>(name);
+    throw_on_error(result);
+    return result.value();
+}
+
+template <typename T>
+Expected<T> Parser::try_get(const std::string& name) const
+{
     if (m_option_map.contains(name)) {
-        if(!m_options[m_option_map.at(name)].value.has_value())
-        {
-            throw Exception(Status::OptionNotSet, Context{ Param::OptionName, name });
+        const auto& option = m_options.at(m_option_map.at(name));
+        if (!option.value.has_value()) {
+            return make_unexpected(Status::OptionNotSet, Context{ Param::OptionName, name });
         }
-        return std::any_cast<T>(m_options[m_option_map.at(name)].value);
+        try {
+            return std::any_cast<T>(option.value);
+        }
+        catch (const std::bad_any_cast&) {
+            return make_unexpected(Status::InvalidValue, Context{ Param::OptionName, name });
+        }
     }
-    throw Exception(Status::OptionNotFound, Context{ Param::OptionName, name }
-    );
+    return make_unexpected(Status::OptionNotFound, Context{ Param::OptionName, name });
 }
 
 template <typename T>
 T Parser::get_positional(const size_t index) const
 {
-    if (index >= m_positional_options.size()) {
-        throw Exception(Status::IndexOutOfRange, Context{ Param::Index, std::to_string(index) });
-    }
-    return std::any_cast<T>(m_positional_options[index].value);
+    auto result = try_get_positional<T>(index);
+    throw_on_error(result);
+    return result.value();
 }
+
+template <typename T>
+Expected<T> Parser::try_get_positional(const size_t index) const
+{
+    if (index >= m_positional_options.size()) {
+        return make_unexpected(Status::IndexOutOfRange, Context{ Param::Index, std::to_string(index) });
+    }
+    const auto& option = m_positional_options[index];
+    if (!option.value.has_value()) {
+        return make_unexpected(Status::OptionNotSet, Context{ Param::Index, std::to_string(index) });
+    }
+    try {
+        return std::any_cast<T>(option.value);
+    }
+    catch (const std::bad_any_cast&) {
+        return make_unexpected(Status::InvalidValue, Context{ Param::Index, std::to_string(index) });
+    }
+}
+
 } // namespace cppline

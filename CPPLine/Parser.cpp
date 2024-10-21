@@ -96,11 +96,24 @@ ExpectedVoid Parser::try_add_string(const std::string& help) {
                           1); // One argument after the positional argument
 }
 
-
 void Parser::parse(const std::vector<std::string_view>& arguments) {
-    auto non_positional_arguments = parse_positional(arguments);
+    auto result = try_parse(arguments);
+    throw_on_error(result);
+}
 
-    parse_non_positional(non_positional_arguments);
+ExpectedVoid Parser::try_parse(const std::vector<std::string_view>& arguments) {
+    auto pos_result = parse_positional(arguments);
+    if (!pos_result.has_value()) {
+        return make_unexpected(std::move(pos_result.error()));
+    }
+
+    auto non_positional_arguments = pos_result.value();
+    auto np_result = parse_non_positional(non_positional_arguments);
+    if (!np_result.has_value()) {
+        return make_unexpected(std::move(np_result.error()));
+    }
+
+    return success();
 }
 
 void Parser::print_help() const {
@@ -134,7 +147,7 @@ void Parser::print_help() const {
     std::cout << help << std::endl;
 }
 
-std::vector<std::string_view> Parser::parse_positional(const std::vector<std::string_view>& arguments)
+Expected<std::vector<std::string_view>> Parser::parse_positional(const std::vector<std::string_view>& arguments)
 {
     std::vector<std::string_view> remaining_args = arguments;
 
@@ -145,20 +158,26 @@ std::vector<std::string_view> Parser::parse_positional(const std::vector<std::st
         if (remaining_args.size() < args_to_consume) {
             const auto context = Context{ Param::ExpectedArgumentCount, std::to_string(args_to_consume) } <<
                 Context{ Param::ReceivedArgumentCount, std::to_string(remaining_args.size()) };
-            throw Exception(Status::NotEnoughArguments, context);
+            return make_unexpected(Status::NotEnoughArguments, context);
         }
 
         // Collect arguments for the parse function
         auto args_view = remaining_args | std::views::take(args_to_consume) | std::ranges::to<std::vector<std::string_view>>();
         remaining_args = remaining_args | std::views::drop(args_to_consume) | std::ranges::to<std::vector<std::string_view>>();
-        option.value = option.parse_function(args_view);
-        option.is_set = true;
+        auto parse_result = option.parse_function(args_view);
+        if (parse_result.has_value()) {
+            m_positional_options[positional_index].value = parse_result.value();
+            m_positional_options[positional_index].is_set = true;
+        }
+        else {
+            return make_unexpected(Status::ParsingError, Context{ Param::Index, std::to_string(positional_index) });
+        }
     }
 
     return remaining_args;
 }
 
-void Parser::parse_non_positional(const std::vector<std::string_view>& arguments)
+ExpectedVoid Parser::parse_non_positional(const std::vector<std::string_view>& arguments)
 {
     std::vector<std::string_view> remaining_args = arguments;
 
@@ -167,28 +186,38 @@ void Parser::parse_non_positional(const std::vector<std::string_view>& arguments
         const std::string argument_name = std::string(remaining_args.front());
 
         if (!m_option_map.contains(argument_name)) {
-            throw Exception(Status::OptionNotFound, Context{ Param::OptionName, argument_name });
+            return make_unexpected(Status::OptionNotFound, Context{ Param::OptionName, argument_name });
         }
 
         auto& option = m_options[m_option_map[argument_name]];
         if (option.is_set) {
-            throw Exception(Status::OptionAlreadySet, Context{ Param::OptionName, argument_name });
+            return make_unexpected(Status::OptionAlreadySet, Context{ Param::OptionName, argument_name });
         }
 
         const size_t args_to_consume = option.argument_count;
 
-        if (remaining_args.size() < args_to_consume) {
-            const auto context = Context{ Param::ExpectedArgumentCount, std::to_string(args_to_consume) } <<
-                Context{ Param::ReceivedArgumentCount, std::to_string(remaining_args.size()) };
-            throw Exception(Status::NotEnoughArguments, context);
+        if (remaining_args.size() - 1 < args_to_consume) {
+            const auto context = Context{ Param::OptionName, argument_name } <<
+                Context{ Param::ExpectedArgumentCount, std::to_string(args_to_consume) } <<
+                Context{ Param::ReceivedArgumentCount, std::to_string(remaining_args.size() - 1) };
+            return make_unexpected(Status::NotEnoughArguments, context);
         }
 
         // Collect arguments for the parse function
         auto args_view = remaining_args | std::views::drop(1) | std::views::take(args_to_consume) | std::ranges::to<std::vector<std::string_view>>();
         remaining_args = remaining_args | std::views::drop(args_to_consume + 1) | std::ranges::to<std::vector<std::string_view>>();
-        option.value = option.parse_function(args_view);
-        option.is_set = true;
+
+        auto parse_result = option.parse_function(args_view);
+        if (parse_result.has_value()) {
+            option.value = std::move(parse_result.value());
+            option.is_set = true;
+        }
+        else {
+            return make_unexpected(Status::ParsingError, Context{ Param::OptionName, argument_name });
+        }
     }
+
+    return success();
 }
 
 std::string Parser::join_names(const Aliases& names) {
@@ -204,28 +233,34 @@ std::string Parser::join_names(const Aliases& names) {
     );
 }
 
-std::any Parser::parse_bool(const std::vector<std::string_view>&)
+Expected<std::any> Parser::parse_bool(const std::vector<std::string_view>&)
 {
     return true; // Presence implies true
 }
 
 ParseFunctionType Parser::parse_int_factory(const Aliases& names)
 {
-    return [names](const std::vector<std::string_view>& args) -> std::any {
+    return [names](const std::vector<std::string_view>& args) -> Expected<std::any> {
         if (args.empty()) {
-            throw Exception(Status::MissingArgument, Context{ Param::OptionName, join_names(names) });
+            return make_unexpected(Status::MissingArgument, Context{ Param::OptionName, join_names(names) });
         }
-        return std::stoi(std::string(args[0]));
+        try {
+            return std::stoi(std::string(args[0]));
+        }
+        catch (const std::exception&) {
+            return make_unexpected(Status::InvalidValue, Context{ Param::OptionName, join_names(names) });
+        }
         };
 }
 
 ParseFunctionType Parser::parse_string_factory(const Aliases& names)
 {
-    return [names](const std::vector<std::string_view>& args) -> std::any {
+    return [names](const std::vector<std::string_view>& args) -> Expected<std::any> {
         if (args.empty()) {
-            throw Exception(Status::MissingArgument, Context{ Param::OptionName, join_names(names) });
+            return make_unexpected(Status::MissingArgument, Context{ Param::OptionName, join_names(names) });
         }
         return std::string(args[0]);
         };
 }
+
 } // namespace cppline

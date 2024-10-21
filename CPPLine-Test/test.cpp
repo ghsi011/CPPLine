@@ -201,3 +201,27 @@ TEST(ParserTest, OptionDoubleUsage) {
         FAIL();
     }
 }
+
+TEST(ParserTest, TryGetOptionSuccess) {
+    cppline::Parser parser("Test Parser");
+    parser.add_int("--number", "Number option", 0);
+
+    const std::vector<std::string_view> args{ "--number", "42" };
+    auto parse_result = parser.try_parse(args);
+    EXPECT_TRUE(parse_result.has_value());
+
+    auto number_result = parser.try_get<int>("--number");
+    EXPECT_TRUE(number_result.has_value());
+    EXPECT_EQ(number_result.value(), 42);
+}
+
+TEST(ParserTest, TryGetOptionFailure) {
+    cppline::Parser parser("Test Parser");
+    parser.add_int("--number", "Number option", 0);
+
+    const std::vector<std::string_view> args{ "--number", "invalid" };
+    auto parse_result = parser.try_parse(args);
+    EXPECT_FALSE(parse_result.has_value());
+
+    Logger::log("Expected parsing error", parse_result.error());
+}
