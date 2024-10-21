@@ -6,7 +6,7 @@ import :Enums;
 export namespace cppline::errors
 {
 
-using StringContext = std::map<Param, std::string>;
+using StringContext = std::unordered_map<Param, std::string>;
 using StringPair = std::tuple<Param, std::string>;
 
 using EnumContext = EnumsMap;

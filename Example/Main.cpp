@@ -35,17 +35,16 @@ int main(int argc, char* argv[])
     // Try register option and handle error cases manually
     ExpectedVoid add_result = parser.try_add_int(Aliases{ "-n", "--number" }, "Set the number", 10);
     if (!add_result.has_value()) {
-        if (add_result.error()->get_error() == Status::OptionAlreadyDefined) {
+        if (add_result.error().get_error() == Status::OptionAlreadyDefined) {
             // We log and ignore here - A somewhat forced example of applying different logic based on the error condition.
-            Logger::log("Option already defined", add_result.error()->get_context());
+            Logger::log("Option already defined", add_result.error().get_context());
         }
         else
         {
             Logger::log("Error adding option", add_result.error());
-            add_result.error()->throw_self(); // don't ignore other errors.
+            add_result.error().throw_self(); // don't ignore other errors.
         }
     }
-
 
     // Collect arguments
     std::vector<std::string_view> arguments;
@@ -56,7 +55,7 @@ int main(int argc, char* argv[])
     // Check for help option
     auto is_help = [](std::string_view arg) { return arg == "--help" || arg == "-h"; };
 
-    if (std::any_of(arguments.begin(), arguments.end(), is_help)) {
+    if (std::ranges::any_of(arguments, is_help)) {
         parser.print_help();
         return 0;
     }
