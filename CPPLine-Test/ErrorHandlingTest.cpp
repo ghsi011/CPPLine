@@ -5,12 +5,6 @@ import CPPLine;
 
 import std;
 
-#ifdef _DEBUG
-static constexpr bool CONSTEXPR_DEBUG = true;
-#else
-static constexpr bool CONSTEXPR_DEBUG = false;
-#endif
-
 using namespace cppline::errors;
 
 // Helper function to measure the execution time of a callable
@@ -91,7 +85,7 @@ TEST(ErrorsTest, ExceptionsBetterOnHappyFlow) {
 }
 
 TEST(ErrorsTest, ExpectedBetterOnSadFlow) {
-    if constexpr (CONSTEXPR_DEBUG) {
+    if constexpr (CONSTEXPR_IS_DEBUG) {
         return;
     }
     constexpr int iterations = 100'000;
@@ -221,7 +215,7 @@ TEST(ErrorsTest, NestedExceptionsBetterOnHappyFlow) {
 }
 
 TEST(ErrorsTest, NestedExpectedBetterOnSadFlow) {
-    if constexpr (CONSTEXPR_DEBUG) {
+    if constexpr (CONSTEXPR_IS_DEBUG) {
         return;
     }
 
