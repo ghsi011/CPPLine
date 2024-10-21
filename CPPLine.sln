@@ -9,6 +9,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CPPLineExample", "Example\E
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CPPLine-Test", "CPPLine-Test\CPPLine-Test.vcxproj", "{FFC1C495-6AE3-4BA7-BF9D-AC1ED962EE2F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1D5CC762-173A-4F16-BA31-8B63ABC23DE6}"
+	ProjectSection(SolutionItems) = preProject
+		ai_share.py = ai_share.py
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64

@@ -56,9 +56,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ai_share.py" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="magic_enum.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

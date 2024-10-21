@@ -1,3 +1,5 @@
+# This script is used to create a single txt file contianing the entire source. this is usefull for copy-pasting into browser-based AI chatbots.
+
 import os
 
 def is_source_file(filename):
@@ -5,8 +7,7 @@ def is_source_file(filename):
     Check if the file is a C++ source/header/module/project file based on its extension.
     """
     source_extensions = {
-        '.cpp', '.hpp', '.h', '.ixx', '.cppm', '.cxx', '.c++', '.cc', '.c',
-        '.hxx', '.hh', '.h++', '.vcxproj'
+        '.tsx', '.tx', '.html', '.js', '.ts', '.yml'
     }
     _, ext = os.path.splitext(filename)
     return ext.lower() in source_extensions
@@ -51,6 +52,10 @@ def consolidate_source_files(directories, output_file, exclude_list, specific_li
             if not os.path.isdir(directory):
                 print(f"Warning: The directory '{directory}' does not exist or is not a directory. Skipping.")
                 continue
+            
+            if os.path.normpath(directory) in exclude_list:
+                print(f"skipping: {directory}")
+                continue
 
             print(f"Processing directory: {directory}")
             if recursive:
@@ -59,7 +64,12 @@ def consolidate_source_files(directories, output_file, exclude_list, specific_li
                     for file in files:
                         if is_source_file(file) and file not in exclude_list:
                             file_path = os.path.join(root, file)
-                            add_file_to_output(file_path, outfile)
+                            add = True
+                            for ex in exclude_list:
+                                if ex in file_path:
+                                    add = False
+                            if add:
+                                add_file_to_output(file_path, outfile)
             else:
                 # Non-recursive traversal using os.listdir
                 try:
