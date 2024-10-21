@@ -5,6 +5,12 @@ import CPPLine;
 
 import std;
 
+#ifdef _DEBUG
+static constexpr bool CONSTEXPR_DEBUG = true;
+#else
+static constexpr bool CONSTEXPR_DEBUG = false;
+#endif
+
 using namespace cppline::errors;
 
 // Helper function to measure the execution time of a callable
@@ -85,6 +91,9 @@ TEST(ErrorsTest, ExceptionsBetterOnHappyFlow) {
 }
 
 TEST(ErrorsTest, ExpectedBetterOnSadFlow) {
+    if constexpr (CONSTEXPR_DEBUG) {
+        return;
+    }
     constexpr int iterations = 100'000;
     constexpr int runs = 5;
     std::vector<double> exception_times;
@@ -180,7 +189,7 @@ TEST(ErrorsTest, NestedExceptionsBetterOnHappyFlow) {
                 try {
                     recursive_function_exception(sink, false, RECURSION_DEPTH); // No exception thrown
                 }
-                catch (const Exception& ) {
+                catch (const Exception&) {
                     // Should not occur
                 }
             }
@@ -212,6 +221,10 @@ TEST(ErrorsTest, NestedExceptionsBetterOnHappyFlow) {
 }
 
 TEST(ErrorsTest, NestedExpectedBetterOnSadFlow) {
+    if constexpr (CONSTEXPR_DEBUG) {
+        return;
+    }
+
     constexpr int iterations = 100'000;
     constexpr int runs = 5;
     std::vector<double> exception_times;
