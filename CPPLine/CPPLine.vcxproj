@@ -165,6 +165,7 @@
     <ClCompile Include="Parser.ixx" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Macros.hpp" />
     <ClInclude Include="magic_enum.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

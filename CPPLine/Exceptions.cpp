@@ -9,7 +9,7 @@ namespace cppline::errors
 Exception::Exception(Status status,
                      Context context,
                      std::source_location location,
-                     std::stacktrace stacktrace) :
+                     std::optional<std::stacktrace> stacktrace) :
     m_status(status),
     m_context(std::move(context)),
     m_location(std::move(location)),
@@ -22,8 +22,12 @@ Status Exception::get_error() const
 Context Exception::get_context() const
 {
     auto exception_context = Context(m_status)
-        << location_to_context(get_location())
-        << stacktrace_to_context(get_stacktrace());
+        << location_to_context(get_location());
+
+    if (const std::optional<std::stacktrace> stack_trace = get_stacktrace(); stack_trace.has_value())
+    {
+        exception_context << stacktrace_to_context(stack_trace.value());
+    }
 
     return exception_context << m_context;
 }
@@ -36,7 +40,7 @@ std::source_location Exception::get_location() const
     return m_location;
 }
 
-std::stacktrace Exception::get_stacktrace() const
+std::optional<std::stacktrace> Exception::get_stacktrace() const
 {
     return m_stacktrace;
 }

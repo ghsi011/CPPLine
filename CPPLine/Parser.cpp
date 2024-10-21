@@ -1,3 +1,6 @@
+module;
+#include "Macros.hpp"
+
 module CPPLine;
 
 import std;
@@ -99,15 +102,11 @@ ExpectedVoid Parser::try_add_string(const std::string& help) {
 
 ExpectedVoid Parser::try_parse(const std::vector<std::string_view>& arguments) {
     auto pos_result = parse_positional(arguments);
-    if (!pos_result.has_value()) {
-        return make_unexpected(std::move(pos_result.error()));
-    }
+    return_on_error(pos_result);
 
     auto non_positional_arguments = pos_result.value();
     auto np_result = parse_non_positional(non_positional_arguments);
-    if (!np_result.has_value()) {
-        return make_unexpected(std::move(np_result.error()));
-    }
+    return_on_error(np_result);
 
     return success();
 }
@@ -167,8 +166,8 @@ Expected<std::vector<std::string_view>> Parser::parse_positional(const std::vect
         remaining_args = remaining_args | std::views::drop(args_to_consume) | std::ranges::to<std::vector<std::string_view>>();
         auto parse_result = option.parse_function(args_view);
         if (parse_result.has_value()) {
-            m_positional_options[positional_index].value = parse_result.value();
-            m_positional_options[positional_index].is_set = true;
+            option.value = parse_result.value();
+            option.is_set = true;
         }
         else {
             return make_unexpected(Status::ParsingError, Context{ Param::Index, std::to_string(positional_index) });
@@ -248,8 +247,10 @@ ParseFunctionType Parser::parse_int_factory(const Aliases& names)
         try {
             return std::stoi(std::string(args[0]));
         }
-        catch (const std::exception&) {
-            return make_unexpected(Status::InvalidValue, Context{ Param::OptionName, join_names(names) });
+        catch (const std::exception& ex) {
+            return make_unexpected(Status::InvalidValue,
+                                   Context{ Param::OptionName, join_names(names) } <<
+                                   Context{ Param::ErrorMessage, ex.what() });
         }
         };
 }

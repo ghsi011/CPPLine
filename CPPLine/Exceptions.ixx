@@ -5,7 +5,12 @@ import :Context;
 import :Enums;
 
 export namespace cppline::errors {
-class Exception;
+
+#ifdef _DEBUG
+constexpr bool CONSTEXPR_IS_DEBUG = true;
+#else
+constexpr bool CONSTEXPR_IS_DEBUG = false;
+#endif
 
 class Exception final
 {
@@ -13,7 +18,8 @@ public:
     explicit Exception(Status status,
                        Context context = StringContext{},
                        std::source_location location = std::source_location::current(),
-                       std::stacktrace stacktrace = std::stacktrace::current());
+                       std::optional<std::stacktrace> stacktrace =
+                       CONSTEXPR_IS_DEBUG ? std::make_optional(std::stacktrace::current()) : std::nullopt);
     ~Exception() = default;
 
     Context get_context() const;
@@ -21,7 +27,7 @@ public:
 
     Status get_error() const;
     std::source_location get_location() const;
-    std::stacktrace get_stacktrace() const;
+    std::optional<std::stacktrace> get_stacktrace() const;
 
     Exception(const Exception&) = default;             // Copy Ctor
     Exception(Exception&&) = default;                  // Move Ctor
@@ -32,6 +38,7 @@ private:
     Status m_status;
     Context m_context;
     std::source_location m_location;
-    std::stacktrace m_stacktrace;
+    std::optional<std::stacktrace> m_stacktrace;
 };
+
 } // namespace cppline::errors
