@@ -55,6 +55,14 @@ public:
     ExpectedVoid try_add_string(const std::string& name, const std::string& help, const std::string& default_value = "");
     ExpectedVoid try_add_string(const std::string& help);
 
+    ExpectedVoid try_parse(const std::vector<std::string_view>& arguments);
+
+    template <typename T>
+    Expected<T> try_get(const std::string& name) const;
+
+    template <typename T>
+    Expected<T> try_get_positional(size_t index) const;
+
     template <typename... Args>
     void add_option(Args&&... args);
 
@@ -70,24 +78,13 @@ public:
     // Parse the command-line arguments
     void parse(const std::vector<std::string_view>& arguments);
 
-    // Expected-based parse
-    ExpectedVoid try_parse(const std::vector<std::string_view>& arguments);
-
     // Retrieve the parsed value
     template <typename T>
     T get(const std::string& name) const;
 
-    // Expected-based get
-    template <typename T>
-    Expected<T> try_get(const std::string& name) const;
-
     // Retrieve positional argument by index
     template <typename T>
     T get_positional(size_t index) const;
-
-    // Expected-based get_positional
-    template <typename T>
-    Expected<T> try_get_positional(size_t index) const;
 
     // Print help message
     void print_help() const;
@@ -137,14 +134,6 @@ void Parser::add_string(Args&&... args)
 }
 
 template <typename T>
-T Parser::get(const std::string& name) const
-{
-    auto result = try_get<T>(name);
-    throw_on_error(result);
-    return result.value();
-}
-
-template <typename T>
 Expected<T> Parser::try_get(const std::string& name) const
 {
     if (m_option_map.contains(name)) {
@@ -163,9 +152,9 @@ Expected<T> Parser::try_get(const std::string& name) const
 }
 
 template <typename T>
-T Parser::get_positional(const size_t index) const
+T Parser::get(const std::string& name) const
 {
-    auto result = try_get_positional<T>(index);
+    auto result = try_get<T>(name);
     throw_on_error(result);
     return result.value();
 }
@@ -186,6 +175,14 @@ Expected<T> Parser::try_get_positional(const size_t index) const
     catch (const std::bad_any_cast&) {
         return make_unexpected(Status::InvalidValue, Context{ Param::Index, std::to_string(index) });
     }
+}
+
+template <typename T>
+T Parser::get_positional(const size_t index) const
+{
+    auto result = try_get_positional<T>(index);
+    throw_on_error(result);
+    return result.value();
 }
 
 } // namespace cppline

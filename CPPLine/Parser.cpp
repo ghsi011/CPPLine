@@ -96,10 +96,6 @@ ExpectedVoid Parser::try_add_string(const std::string& help) {
                           1); // One argument after the positional argument
 }
 
-void Parser::parse(const std::vector<std::string_view>& arguments) {
-    auto result = try_parse(arguments);
-    throw_on_error(result);
-}
 
 ExpectedVoid Parser::try_parse(const std::vector<std::string_view>& arguments) {
     auto pos_result = parse_positional(arguments);
@@ -114,6 +110,11 @@ ExpectedVoid Parser::try_parse(const std::vector<std::string_view>& arguments) {
     }
 
     return success();
+}
+
+void Parser::parse(const std::vector<std::string_view>& arguments) {
+    auto result = try_parse(arguments);
+    throw_on_error(result);
 }
 
 void Parser::print_help() const {
