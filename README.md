@@ -67,6 +67,38 @@ auto key_value = parser.get<std::pair<std::string, std::string>>("--keyvalue");
 std::string first_pos_arg = parser.get_positional<std::string>(0);
 int second_pos_arg = parser.get_positional<int>(1);
 ```
+
+## Exception-Free Usage
+
+```cpp
+Parser parser("Demo Application");
+
+// Register options and arguments without exceptions
+auto add_name_result = parser.try_add_string("--name", "Set the name", "default");
+if (!add_name_result.has_value()) {
+    // Handle error
+    Logger::log("Error adding --name option", add_name_result.error());
+    return 1;
+}
+
+// Parse arguments without exceptions
+auto parse_result = parser.try_parse(arguments);
+if (!parse_result.has_value()) {
+    // Handle parsing error
+    Logger::log("Parsing error", parse_result.error());
+    parser.print_help();
+    return 1;
+}
+
+// Retrieve values without exceptions
+auto name_result = parser.try_get<std::string>("--name");
+if (!name_result.has_value()) {
+    // Handle retrieval error
+    Logger::log("Retrieval error for --name", name_result.error());
+    return 1;
+}
+std::string name = name_result.value();
+
 You can look at the Example project or the tests for more complete usage examples.
 
 ## Requirements
@@ -75,7 +107,6 @@ You can look at the Example project or the tests for more complete usage example
 - [Google Test](https://github.com/google/googletest) (for running tests).
 
 ## TODO:
-- Finish introducing Expected overloads for Parser - allow a completely exception-free usage.
 - Showcase usage of multiple enums in error handling - currently the infrastructure is there but it's not used much.
 - Polish - This code wasn't reviewed and still needs some refactoring. 
 

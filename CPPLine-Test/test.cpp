@@ -202,9 +202,10 @@ TEST(ParserTest, OptionDoubleUsage) {
     }
 }
 
-TEST(ParserTest, TryGetOptionSuccess) {
+TEST(ParserTest, TryAddAndGetOptionSuccess) {
     cppline::Parser parser("Test Parser");
-    parser.add_int("--number", "Number option", 0);
+    auto add_result = parser.try_add_int("--number", "Number option", 0);
+    EXPECT_TRUE(add_result.has_value());
 
     const std::vector<std::string_view> args{ "--number", "42" };
     auto parse_result = parser.try_parse(args);
@@ -213,6 +214,15 @@ TEST(ParserTest, TryGetOptionSuccess) {
     auto number_result = parser.try_get<int>("--number");
     EXPECT_TRUE(number_result.has_value());
     EXPECT_EQ(number_result.value(), 42);
+}
+
+TEST(ParserTest, TryAddOptionFailure) {
+    cppline::Parser parser("Test Parser");
+    parser.try_add_int("--number", "Number option", 0);
+    // Attempt to add the same option again
+    auto add_result = parser.try_add_int("--number", "Duplicate number option", 0);
+    EXPECT_FALSE(add_result.has_value());
+    Logger::log("Expected error adding duplicate option", add_result.error());
 }
 
 TEST(ParserTest, TryGetOptionFailure) {
