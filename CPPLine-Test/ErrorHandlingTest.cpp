@@ -227,8 +227,6 @@ TEST(ErrorsTest, NestedExpectedBetterOnSadFlow) {
                     recursive_function_exception(sink, true, RECURSION_DEPTH); // Exception thrown
                 }
                 catch (const Exception&) {
-                    // Handle the exception
-                    //Logger::log("error", ex);
                     sink += 1;
                 }
             }
@@ -239,8 +237,6 @@ TEST(ErrorsTest, NestedExpectedBetterOnSadFlow) {
             for (int i = 0; i < iterations; ++i) {
                 auto result = recursive_function_expected(sink, true, RECURSION_DEPTH); // Error occurs
                 if (!result.has_value()) {
-                    // Handle the error
-                    // Logger::log("error", result.error());
                     sink += 1;
                 }
             }

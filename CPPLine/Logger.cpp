@@ -58,5 +58,4 @@ std::string Logger::format_context(const Context& context)
     return context_string;
 }
 
-
 }

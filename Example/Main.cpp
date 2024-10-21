@@ -46,7 +46,6 @@ int main(int argc, char* argv[])
         }
     }
 
-
     // Collect arguments
     std::vector<std::string_view> arguments;
     for (int i = 1; i < argc; ++i) {
