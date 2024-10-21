@@ -222,6 +222,7 @@ TEST(ParserTest, TryAddOptionFailure) {
     // Attempt to add the same option again
     auto add_result = parser.try_add_int("--number", "Duplicate number option", 0);
     EXPECT_FALSE(add_result.has_value());
+    EXPECT_EQ(add_result.error().get_error(), Status::OptionAlreadyDefined);
     Logger::log("Expected error adding duplicate option", add_result.error());
 }
 
@@ -231,6 +232,7 @@ TEST(ParserTest, TryGetOptionFailure) {
 
     const std::vector<std::string_view> args{ "--number", "invalid" };
     auto parse_result = parser.try_parse(args);
+    EXPECT_EQ(parse_result.error().get_error(), Status::ParsingError);
     EXPECT_FALSE(parse_result.has_value());
 
     Logger::log("Expected parsing error", parse_result.error());

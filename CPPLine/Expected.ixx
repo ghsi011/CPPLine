@@ -17,9 +17,9 @@ template <typename T >
 using Expected = std::expected<T, Exception>;
 
 inline std::unexpected<Exception> make_unexpected(const Status status,
-                                           Context context = StringContext{},
-                                           const std::source_location& location = std::source_location::current(),
-                                           const std::stacktrace& stacktrace = std::stacktrace::current())
+                                                  Context context = StringContext{},
+                                                  const std::source_location& location = std::source_location::current(),
+                                                  const std::stacktrace& stacktrace = std::stacktrace::current())
 {
     return std::unexpected(Exception(status, std::move(context), location, stacktrace));
 }
@@ -37,4 +37,6 @@ void throw_on_error(const Expected<T>& expected)
         expected.error().throw_self();
     }
 }
-}
+
+} // namespace cppline::errors
+
